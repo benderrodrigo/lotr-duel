@@ -8,7 +8,8 @@ Landmarks The Shire and Grond and an optional Allies module. Works offline and i
 
 The board game is designed by Antoine Bauza and Bruno Cathala and published by Repos Production / Asmodee.
 This project is not affiliated with or endorsed by them or by Middle-earth Enterprises; buy the game and read
-the [official rules](https://www.rprod.com/en/games/duel-for-middle-earth). All artwork here is original (SVG and emoji); no publisher artwork is included.
+the [official rules](https://www.rprod.com/en/games/duel-for-middle-earth). All artwork in the app is original (SVG and emoji).
+`art.bin` is an encrypted file for the owner's personal copy; it is unreadable and unused without a private key.
 
 Install: open the link in Chrome on Android and choose *Install app* (or *Add to Home screen*)
 from the menu; on a laptop use the install icon in the Edge or Chrome address bar.

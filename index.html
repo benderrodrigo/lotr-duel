@@ -110,6 +110,13 @@ svg.quest { width: 100%; max-height: 170px; height: auto; display: block; flex: 
 .tile .tc { position: absolute; right: 4px; bottom: 3px; }
 .tile.fan .tn::after { content: " \2605"; color: #8a5a00; }
 .tile.empty { cursor: default; opacity: .5; border-style: dashed; background: none; }
+.tile.art { background-size: cover; background-position: center 30%; color: #fff; text-shadow: 0 1px 2px #000, 0 0 4px #000; }
+.tile.art .muted { color: #f1e6cc; }
+.tile.art.fan .tn::after { color: #ffd76a; }
+.tilebig { display: block; width: min(240px, 70%); margin: 0 auto 8px; border-radius: 10px; }
+.allybig { display: block; width: min(170px, 50%); margin: 0 auto 8px; border-radius: 10px; }
+.allyimg { float: left; width: 40px; border-radius: 4px; margin: 0 6px 2px 0; }
+.ally::after { content: ""; display: block; clear: both; }
 
 /* svg pieces */
 .card { cursor: default; }
@@ -471,8 +478,12 @@ const ALLIES = {
 const SETS = {base: 'Base game', fan: 'Fan tiles: The Shire and Grond', allies: 'Allies expansion'};
 
 // ===== Rules engine: state in, legal actions and new state out. No DOM access. =====
-const APP_VERSION = '0.3';
+const APP_VERSION = '0.4';
 const CHANGELOG = [
+  {v: '0.4', date: '2026-10-30', items: [
+    'Real art for the Landmark tiles (including The Shire and Grond) and the Allies, in tiles, player panels and popups.',
+    'Private art link: the web version shows all the real art when opened from the owner\'s private link (remembered on that device); without it, the drawn cards remain.',
+  ]},
   {v: '0.3', date: '2026-10-30', items: [
     'The local file shows the real card art on all 69 cards; switch back to the clear icon cards with Menu \u2192 Card art.',
     'The web version keeps the drawn cards (no publisher artwork online).',
@@ -1896,26 +1907,51 @@ const towerPath = (x, y, s, col) => `<path transform="translate(${x},${y}) scale
 const skillStr = arr => arr.map(s => SKILL_ICON[s]).join('');
 const regAbbr = r => rname(r).slice(0, 3).toUpperCase();
 
-// ---------- card art: photos (local build only, injected by publish.py) or drawn SVG, 100 x 140 ----------
-const CARD_ART = (src => {
-  const out = {};
+// ---------- art: photos keyed C1-01 / T:<tile> / A:<ally>. The local build embeds them (publish.py);
+// the web build fetches art.bin, AES-GCM encrypted, and unlocks it only with the key from a private #art= link.
+const ART = {};
+(src => {
   for (const [id, uri] of Object.entries(src || {})) {
     try {
       const bin = atob(uri.slice(uri.indexOf(',') + 1)), a = new Uint8Array(bin.length);
       for (let i = 0; i < bin.length; i++) a[i] = bin.charCodeAt(i);
-      out[id] = URL.createObjectURL(new Blob([a], {type: 'image/webp'}));
-    } catch { out[id] = uri; }
+      ART[id] = URL.createObjectURL(new Blob([a], {type: uri.slice(5, uri.indexOf(';'))}));
+    } catch { ART[id] = uri; }
   }
-  return out;
 })(/*CARDART*/null/*/CARDART*/);
-const HAS_ART = Object.keys(CARD_ART).length > 0;
+const hasArt = () => Object.keys(ART).length > 0;
+const art = id => UI.art && ART[id];
+async function artUnlock() {
+  if (hasArt() || !/^https?:$/.test(location.protocol) || !(window.crypto && crypto.subtle)) return;
+  const m = location.hash.match(/(?:^#|&)art=([A-Za-z0-9_-]{43})/);
+  if (m) { store.set('artkey', m[1]); history.replaceState(null, '', location.pathname + location.search); }
+  const k = store.get('artkey', null);
+  if (!k) return;
+  try {
+    const raw = Uint8Array.from(atob(k.replace(/-/g, '+').replace(/_/g, '/') + '='), c => c.charCodeAt(0));
+    const res = await fetch('art.bin');
+    if (!res.ok) return;
+    const buf = new Uint8Array(await res.arrayBuffer()), magic = buf.subarray(0, 4);
+    const key = await crypto.subtle.importKey('raw', raw, 'AES-GCM', false, ['decrypt']);
+    const pt = new Uint8Array(await crypto.subtle.decrypt({name: 'AES-GCM', iv: buf.subarray(4, 16), additionalData: magic}, key, buf.subarray(16)));
+    const hl = new DataView(pt.buffer).getUint32(0);
+    let off = 4 + hl;
+    for (const [id, type, len] of JSON.parse(new TextDecoder().decode(pt.subarray(4, off)))) {
+      ART[id] = URL.createObjectURL(new Blob([pt.subarray(off, off + len)], {type})); off += len;
+    }
+    if (UI.S) renderGame(); else if ($('.landing')) landing();
+  } catch (e) {
+    if (e && e.name === 'OperationError') { store.del('artkey'); toast('This art link is not valid for this version.'); }
+  }
+}
+addEventListener('hashchange', artUnlock);
 let clipSeq = 0;
 function cardInner(id) {
   const c = CARDS[id], W = 100;
-  if (UI.art && CARD_ART[id]) {
+  if (art(id)) {
     const cp = 'cc' + (++clipSeq);
     return `<clipPath id="${cp}"><rect width="100" height="140" rx="7"/></clipPath><rect width="100" height="140" rx="8" fill="${CFILL[c.color]}"/>`
-      + `<image href="${CARD_ART[id]}" width="100" height="140" preserveAspectRatio="xMidYMin slice" clip-path="url(#${cp})"/>`
+      + `<image href="${ART[id]}" width="100" height="140" preserveAspectRatio="xMidYMin slice" clip-path="url(#${cp})"/>`
       + `<rect class="cf" width="100" height="140" rx="8" fill="none" stroke="#2b2118" stroke-width="1.5"/>`;
   }
   let s = `<rect class="cf" width="100" height="140" rx="8" fill="${CFILL[c.color]}" stroke="#2b2118" stroke-width="1.5"/>
@@ -2058,7 +2094,8 @@ function tilesHTML() {
   let h = S.tilesFace.map(t => {
     const T = TILES[t], ok = legal.some(a => a.t === 'tile' && a.tile === t) || targ.has(t);
     const c = Engine.tileCost(S, S.active, t), locked = S.tileLocks.includes(t);
-    return `<button class="tile ${ok ? 'legal' : ''} ${T.fan ? 'fan' : ''} ${locked ? 'locked' : ''}" data-a="tile" data-t="${t}">
+    const img = art('T:' + t);
+    return `<button class="tile ${ok ? 'legal' : ''} ${T.fan ? 'fan' : ''} ${locked ? 'locked' : ''} ${img ? 'art' : ''}" data-a="tile" data-t="${t}"${img ? ` style="background-image:linear-gradient(rgba(20,14,8,.15),rgba(20,14,8,.78)),url(${img})"` : ''}>
       <span class="tc">${main ? `<svg width="22" height="22" viewBox="-11 -11 22 22">${coinSVG(0, 0, c.coins, 10)}</svg>` : ''}</span>
       <div class="tn">${esc(T.name)}</div>
       <div class="ts">${skillStr(T.skills.split(' '))}</div>
@@ -2069,6 +2106,7 @@ function tilesHTML() {
 }
 
 // ---------- player panels ----------
+const allyImg = a => art('A:' + a) ? `<img class="allyimg" src="${ART['A:' + a]}" alt="">` : '';
 function skillTotals(P) {
   const t = {}, ch = [];
   for (const id of P.cards) { const c = CARDS[id]; if (c.skills) for (const g of c.skills) { if (g.length === 1) t[g[0]] = (t[g[0]] || 0) + 1; else ch.push(g); } }
@@ -2094,11 +2132,11 @@ function playerHTML(p) {
     h += `<div class="sub2"><span class="muted">Allies:</span>`;
     for (const a of A.front) {
       const can = acts.some(x => x.a === a && x.mode === 'exit');
-      h += `<div class="ally"><b>${esc(ALLIES[a].name)}</b> <span class="muted">(in play)</span><div>Exit: ${esc(ALLIES[a].xt)}</div>${can ? `<button data-a="ally" data-ally="${a}" data-mode="exit" class="lock">Send away (2\u26A1)</button>` : ''}</div>`;
+      h += `<div class="ally">${allyImg(a)}<b>${esc(ALLIES[a].name)}</b> <span class="muted">(in play)</span><div>Exit: ${esc(ALLIES[a].xt)}</div>${can ? `<button data-a="ally" data-ally="${a}" data-mode="exit" class="lock">Send away (2\u26A1)</button>` : ''}</div>`;
     }
     if (mine) for (const a of A.hand) {
       const can = acts.some(x => x.a === a && x.mode === 'enter');
-      h += `<div class="ally"><b>${esc(ALLIES[a].name)}</b> <span class="muted">(hidden)</span><div>Enter: ${esc(ALLIES[a].et)}</div><div class="muted">Exit: ${esc(ALLIES[a].xt)}</div>${can ? `<button data-a="ally" data-ally="${a}" data-mode="enter" class="lock">Call (1\u26A1)</button>` : ''}</div>`;
+      h += `<div class="ally">${allyImg(a)}<b>${esc(ALLIES[a].name)}</b> <span class="muted">(hidden)</span><div>Enter: ${esc(ALLIES[a].et)}</div><div class="muted">Exit: ${esc(ALLIES[a].xt)}</div>${can ? `<button data-a="ally" data-ally="${a}" data-mode="enter" class="lock">Call (1\u26A1)</button>` : ''}</div>`;
     }
     else if (A.hand.length) h += `<div class="ally muted">${A.hand.length} hidden Ally card${A.hand.length > 1 ? 's' : ''}</div>`;
     if (A.gone.length) h += `<div class="muted" style="font-size:12px">Gone: ${A.gone.map(a => esc(ALLIES[a].name)).join(', ')}</div>`;
@@ -2378,7 +2416,7 @@ function onTile(t) {
   const T = TILES[t], main = myTurn() && !S.mainDone, p = main ? S.active : viewer(), c = Engine.tileCost(S, p, t);
   const a = main && Engine.legalActions(S).find(x => x.t === 'tile' && x.tile === t);
   const irr = a && Engine.apply(S, a).irrev;
-  modal({title: T.name, body: `<p>${esc(TILE_TEXT[t])}</p><p>Skills: ${skillStr(T.skills.split(' '))}</p>
+  modal({title: T.name, body: `${art('T:' + t) ? `<img class="tilebig" src="${ART['T:' + t]}" alt="">` : ''}<p>${esc(TILE_TEXT[t])}</p><p>Skills: ${skillStr(T.skills.split(' '))}</p>
     <p class="muted">Cost for you: ${c.coins} Coin${c.coins === 1 ? '' : 's'} (${c.missing} missing Skills + ${c.fee} for your Fortresses on the board). You have ${S.players[p].coins}.</p>
     ${t === 'grond' && !REGION_IDS.some(r => S.board[r].f[opp(p)]) ? '<p class="muted">Needs an enemy Fortress on the board.</p>' : ''}${S.tileLocks.includes(t) ? '<p class="muted">Locked by the Uruk-Hai Chief for the Fellowship.</p>' : ''}`,
     buttons: a ? [{label: `Build (${c.coins}\u25CF)${irr ? ' \u{1F512}' : ''}`, cls: 'primary', fn: () => commit(a, true)}] : []});
@@ -2408,7 +2446,7 @@ function onAlly(a, mode) {
   const act = Engine.legalActions(S).find(x => x.t === 'ally' && x.a === a && x.mode === mode);
   if (!act || !myTurn()) return;
   const al = ALLIES[a];
-  modal({title: al.name, body: `<p>${mode === 'enter' ? 'Enter' : 'Exit'}: ${esc(mode === 'enter' ? al.et : al.xt)}</p><p class="muted">Costs ${mode === 'enter' ? 1 : 2} Power. Allies cannot be undone.</p>`,
+  modal({title: al.name, body: `${art('A:' + a) ? `<img class="allybig" src="${ART['A:' + a]}" alt="">` : ''}<p>${mode === 'enter' ? 'Enter' : 'Exit'}: ${esc(mode === 'enter' ? al.et : al.xt)}</p><p class="muted">Costs ${mode === 'enter' ? 1 : 2} Power. Allies cannot be undone.</p>`,
     buttons: [{label: mode === 'enter' ? 'Call (1\u26A1) \u{1F512}' : 'Send away (2\u26A1) \u{1F512}', cls: 'primary', fn: () => commit(act, true)}]});
 }
 
@@ -2422,7 +2460,7 @@ function showDiscard() {
 function showMenu() {
   modal({title: 'Menu', body: `<label class="check"><input type="checkbox" id="m-anim" ${UI.anim ? 'checked' : ''}> Animations</label>
     <label class="check"><input type="checkbox" id="m-mute" ${UI.mute ? '' : 'checked'}> Sound</label>
-    ${HAS_ART ? `<label class="check"><input type="checkbox" id="m-art" ${UI.art ? 'checked' : ''}> Card art (off: clear icons)</label>` : ''}
+    ${hasArt() ? `<label class="check"><input type="checkbox" id="m-art" ${UI.art ? 'checked' : ''}> Card art (off: clear icons)</label>` : ''}
     <p class="muted">Seed ${UI.S.seed} \u00B7 Fan tiles ${UI.S.opts.fan ? 'on' : 'off'} \u00B7 Allies ${UI.S.opts.allies ? 'on' : 'off'}</p>
     <p class="muted">LOTR Duel v${APP_VERSION}</p>`,
   buttons: [{label: 'Main menu', fn: () => landing()}, {label: "What's new", fn: showChangelog},
@@ -2431,7 +2469,7 @@ function showMenu() {
   }}]});
   $('#m-anim').onchange = e => { UI.anim = e.target.checked; store.set('anim', UI.anim); renderGame(); };
   $('#m-mute').onchange = e => { UI.mute = !e.target.checked; store.set('mute', UI.mute); renderGame(); };
-  if (HAS_ART) $('#m-art').onchange = e => { UI.art = e.target.checked; store.set('art', UI.art); renderGame(); };
+  if (hasArt()) $('#m-art').onchange = e => { UI.art = e.target.checked; store.set('art', UI.art); renderGame(); };
 }
 function showChangelog() {
   const list = CHANGELOG.map((r, i) => `<section><h3>v${esc(r.v)}${i === 0 ? ' <span class="cl-new">Current</span>' : ''}<small>${esc(r.date)}</small></h3>`
@@ -2474,6 +2512,7 @@ function pwaInit() {
   }).catch(err => say('error ' + err.message));
 }
 addEventListener('load', pwaInit);
+addEventListener('load', artUnlock);
 function showHelp() {
   modal({title: 'How to play', body: `
     <p>Two players: the <b class="fel">Fellowship</b> and <b class="sau">Sauron</b>. Sauron starts. Over 3 chapters, take turns taking one action:</p>
