@@ -57,6 +57,21 @@ a { color: #6a3e12; }
 .row > * { flex: 1 1 auto; }
 .foot { text-align: center; margin-top: 10px; font-size: 13px; }
 .foot a { cursor: pointer; }
+.landing { padding-bottom: 44px; }
+.l-ver { position: fixed; left: 0; right: 0; bottom: 0; margin: 0; padding: 0 12px calc(6px + env(safe-area-inset-bottom)); text-align: center;
+  font-size: 12.5px; line-height: 1.2; color: #eadfc8; text-shadow: 0 1px 3px #000; z-index: 1; }
+.l-ver button { min-height: 28px; padding: 2px 6px; border: 0; background: none; color: #f5d68d; font: inherit; font-weight: 700;
+  text-decoration: underline; text-underline-offset: 2px; box-shadow: none; }
+.l-ver button:hover { color: #fff1c9; }
+[hidden] { display: none !important; }
+.cl section { border-top: 1px solid var(--line); padding: 8px 0 2px; }
+.cl section:first-child { border-top: 0; padding-top: 0; }
+.cl h3 { margin: 0 0 4px; font-size: 15.5px; display: flex; flex-wrap: wrap; align-items: baseline; gap: 4px 8px; }
+.cl h3 small { font-weight: 400; font-size: 12px; color: var(--muted); }
+.cl .cl-new { font-size: 11px; font-weight: 700; letter-spacing: .06em; text-transform: uppercase; color: #fff; background: var(--gold);
+  border-radius: 999px; padding: 1px 8px; font-family: "Segoe UI", system-ui, sans-serif; }
+.cl ul { margin: 0 0 4px; padding-left: 20px; }
+.cl li { margin: 2px 0; line-height: 1.4; }
 
 /* ---------- game shell ---------- */
 #game { height: 100dvh; display: grid; grid-template-rows: auto 1fr; overflow: hidden; }
@@ -456,8 +471,12 @@ const ALLIES = {
 const SETS = {base: 'Base game', fan: 'Fan tiles: The Shire and Grond', allies: 'Allies expansion'};
 
 // ===== Rules engine: state in, legal actions and new state out. No DOM access. =====
-const APP_VERSION = '0.1';
+const APP_VERSION = '0.2';
 const CHANGELOG = [
+  {v: '0.2', date: '2026-10-30', items: [
+    'Version history at the bottom of the start screen ("What\'s new"), and a notice after an update.',
+    'Install as an app from the browser: an Install app button where the browser supports it, otherwise step-by-step instructions. Works offline once installed.',
+  ]},
   {v: '0.1', date: '2026-10-30', items: [
     'Full base game: 3 chapters, 69 cards, 7 Landmarks, Alliance tokens, Quest of the Ring and the central board.',
     'Fan Landmark tiles The Shire and Grond, on by default.',
@@ -2379,16 +2398,56 @@ function showDiscard() {
 function showMenu() {
   modal({title: 'Menu', body: `<label class="check"><input type="checkbox" id="m-anim" ${UI.anim ? 'checked' : ''}> Animations</label>
     <label class="check"><input type="checkbox" id="m-mute" ${UI.mute ? '' : 'checked'}> Sound</label>
-    <p class="muted">Seed ${UI.S.seed} \u00B7 Fan tiles ${UI.S.opts.fan ? 'on' : 'off'} \u00B7 Allies ${UI.S.opts.allies ? 'on' : 'off'}</p>`,
-  buttons: [{label: 'Main menu', fn: () => landing()}, {label: 'Changelog', fn: showChangelog}, {label: 'Results so far', fn: () => {
+    <p class="muted">Seed ${UI.S.seed} \u00B7 Fan tiles ${UI.S.opts.fan ? 'on' : 'off'} \u00B7 Allies ${UI.S.opts.allies ? 'on' : 'off'}</p>
+    <p class="muted">LOTR Duel v${APP_VERSION}</p>`,
+  buttons: [{label: 'Main menu', fn: () => landing()}, {label: "What's new", fn: showChangelog},
+    ...(canOfferInstall() ? [{label: 'Install app', fn: doInstall}] : []), {label: 'Results so far', fn: () => {
     const R = Engine.result(UI.S); modal({title: 'Current standing', body: `<table class="res"><tr><th></th>${R.rows.map(r => `<th>${esc(r.name)}</th>`).join('')}</tr>${['regions', 'races', 'quest', 'coins', 'cards', 'landmarks'].map(k => `<tr><td>${k}</td>${R.rows.map(r => `<td>${r[k]}</td>`).join('')}</tr>`).join('')}</table>`});
   }}]});
   $('#m-anim').onchange = e => { UI.anim = e.target.checked; store.set('anim', UI.anim); renderGame(); };
   $('#m-mute').onchange = e => { UI.mute = !e.target.checked; store.set('mute', UI.mute); renderGame(); };
 }
 function showChangelog() {
-  modal({title: `LOTR Duel v${APP_VERSION}`, body: CHANGELOG.map(c => `<h3>v${c.v} <small class="muted">${c.date}</small></h3><ul>${c.items.map(i => `<li>${esc(i)}</li>`).join('')}</ul>`).join('')});
+  const list = CHANGELOG.map((r, i) => `<section><h3>v${esc(r.v)}${i === 0 ? ' <span class="cl-new">Current</span>' : ''}<small>${esc(r.date)}</small></h3>`
+    + `<ul>${r.items.map(t => `<li>${esc(t)}</li>`).join('')}</ul></section>`).join('');
+  modal({title: "What's new", dock: false, body: `<p class="muted">Features and fixes in each version, newest first.</p><div class="cl">${list}</div>`});
 }
+
+// ---------- installable app ----------
+let installEvt = null;
+const standalone = () => matchMedia('(display-mode: standalone)').matches || navigator.standalone === true;
+const canOfferInstall = () => /^https?:$/.test(location.protocol) && !standalone() && !!document.querySelector('link[rel="manifest"]');
+function refreshInstall() { const b = $('#install'); if (b) b.hidden = !canOfferInstall(); }
+addEventListener('beforeinstallprompt', e => { e.preventDefault(); installEvt = e; refreshInstall(); });
+addEventListener('appinstalled', () => { installEvt = null; toast('LOTR Duel installed'); refreshInstall(); });
+function doInstall() {
+  if (installEvt) {
+    const ev = installEvt; installEvt = null;
+    ev.prompt();
+    ev.userChoice.then(c => { if (c.outcome !== 'accepted') installEvt = ev; refreshInstall(); }).catch(() => {});
+    return;
+  }
+  const ios = /iphone|ipad|ipod/i.test(navigator.userAgent) || (navigator.platform === 'MacIntel' && navigator.maxTouchPoints > 1);
+  modal({title: 'Install as an app', dock: false, body: ios
+    ? `<p>In <b>Safari</b>, tap the <b>Share</b> button (the square with an arrow), then <b>Add to Home Screen</b>.</p>`
+    : `<p><b>Android (Chrome):</b> open the \u22EE menu and choose <b>Install app</b> or <b>Add to Home screen</b>.</p>
+       <p><b>Laptop (Edge or Chrome):</b> click the install icon at the right of the address bar, or open the menu and choose <b>Apps \u2192 Install LOTR Duel</b>.</p>`
+    + `<p class="muted">Once installed it opens in its own window, with its own icon, and plays offline. Saved games and statistics stay on this device.</p>`});
+}
+function pwaInit() {
+  if (Q.has('test') || Q.has('selfplay')) return;
+  const last = store.get('lastVersion', null);
+  if (last && last !== APP_VERSION) setTimeout(() => toast(`Updated to v${APP_VERSION}`), 1200);
+  store.set('lastVersion', APP_VERSION);
+  const man = document.querySelector('link[rel="manifest"]'), say = s => { if (Q.has('swcheck')) document.title = 'SWCHECK ' + s; };
+  if (!/^https?:$/.test(location.protocol) || !('serviceWorker' in navigator) || !man) { say('skipped ' + location.protocol + (man ? '' : ' no-manifest')); return; }
+  say('pending');
+  navigator.serviceWorker.register('sw.js').then(() => navigator.serviceWorker.ready).then(reg => {
+    if (!Q.has('swcheck')) return;
+    return fetch(man.href).then(r => r.json()).then(m => say(`registered active=${reg.active && reg.active.state} scope=${reg.scope} manifest=${m.name} icons=${(m.icons || []).length}`));
+  }).catch(err => say('error ' + err.message));
+}
+addEventListener('load', pwaInit);
 function showHelp() {
   modal({title: 'How to play', body: `
     <p>Two players: the <b class="fel">Fellowship</b> and <b class="sau">Sauron</b>. Sauron starts. Over 3 chapters, take turns taking one action:</p>
@@ -2443,7 +2502,10 @@ function landing() {
       <label class="check"><input type="checkbox" id="o-allies" ${o.allies ? 'checked' : ''}> Allies expansion</label></div>
     <div class="row"><button class="primary" id="go">New game</button>${canCont ? '<button id="cont">Continue</button>' : ''}</div>
     <div class="row" style="margin-top:8px"><button id="howto">How to play</button><button id="stats">Statistics</button></div>
-    <div class="foot"><a href="${RULES_URL}" target="_blank" rel="noopener">Official rules</a> \u00B7 <a id="ver">v${APP_VERSION}</a></div></div></div>`;
+    <div class="row" style="margin-top:8px"><button id="install" ${canOfferInstall() ? '' : 'hidden'}>\u{1F4F2} Install app</button></div>
+    <div class="foot"><a href="${RULES_URL}" target="_blank" rel="noopener">Official rules</a></div></div>
+    <p class="l-ver"><button type="button" id="ver" aria-haspopup="dialog" title="What's new: version history">v${APP_VERSION}</button> \u00B7 promptcrafted by BD</p></div>`;
+  $('#install').onclick = doInstall;
   document.querySelectorAll('[data-set]').forEach(b => b.onclick = () => { o[b.dataset.set] = b.dataset.v; store.set('setup', o); landing(); });
   $('#o-fan').onchange = e => { o.fan = e.target.checked; store.set('setup', o); };
   $('#o-allies').onchange = e => { o.allies = e.target.checked; store.set('setup', o); };
@@ -2529,8 +2591,6 @@ function boot() {
   if (Q.has('selfplay')) return runSelfplay();
   if (UI.freeze) return runFreeze();
   landing();
-  if (location.protocol.startsWith('http') && 'serviceWorker' in navigator && document.querySelector('link[rel="manifest"]'))
-    navigator.serviceWorker.register('sw.js').catch(() => {});
 }
 boot();
 
