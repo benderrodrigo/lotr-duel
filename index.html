@@ -1,0 +1,2539 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
+<meta name="color-scheme" content="only light">
+<title>LOTR Duel</title>
+<link rel="icon" href="icons/favicon.ico" sizes="any">
+<link rel="icon" href="icons/icon.svg" type="image/svg+xml">
+<link rel="apple-touch-icon" href="icons/apple-touch-icon.png">
+<link rel="manifest" href="manifest.webmanifest">
+<meta name="theme-color" content="#3d2f1f">
+<meta name="mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-title" content="LOTR Duel">
+<meta name="description" content="Unofficial fan implementation of The Lord of the Rings: Duel for Middle-earth for personal play. Works offline.">
+<style>
+:root {
+  color-scheme: only light;
+  --parch: #efe4c8; --parch2: #e4d3ab; --ink: #2b2118; --muted: #6b5a45; --gold: #b8892c; --gold2: #e0b850;
+  --fel: #2f6db5; --sau: #a42a2a; --panel: #f7efda; --line: #c9b48a; --ok: #2f7d3a; --bad: #a42a2a;
+  --g-grey: #8f8a80; --g-yellow: #e2b53b; --g-blue: #3c7cc4; --g-green: #4f9a45; --g-red: #b8402f; --g-purple: #7b4ba0;
+}
+* { box-sizing: border-box; }
+html, body { margin: 0; height: 100%; background: var(--parch); color: var(--ink);
+  font: 15px/1.35 "Segoe UI", system-ui, -apple-system, Roboto, sans-serif; -webkit-tap-highlight-color: transparent; }
+button { font: inherit; color: inherit; cursor: pointer; border: 1px solid var(--line); background: #fffaf0; border-radius: 8px;
+  padding: 7px 12px; min-height: 38px; }
+button:hover { border-color: var(--gold); }
+button:disabled { opacity: .45; cursor: default; }
+button.primary { background: #3d2f1f; color: #fff5dc; border-color: #3d2f1f; }
+button.primary:hover { background: #57432c; }
+button.ghost { background: transparent; }
+.lock::after { content: " \1F512"; font-size: .8em; }
+h1, h2, h3 { font-family: Georgia, "Palatino Linotype", serif; margin: .2em 0 .4em; }
+a { color: #6a3e12; }
+.muted { color: var(--muted); }
+.fel { color: var(--fel); } .sau { color: var(--sau); }
+
+/* ---------- landing ---------- */
+.landing { min-height: 100%; display: grid; place-items: center; padding: 16px; position: relative; overflow: auto; }
+.landing .art { position: fixed; inset: 0; background-image: url("data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHZpZXdCb3g9IjAgMCAxNjAwIDEwMDAiIHByZXNlcnZlQXNwZWN0UmF0aW89InhNaWRZTWlkIHNsaWNlIj4KICA8ZGVmcz4KICAgIDxsaW5lYXJHcmFkaWVudCBpZD0ic2t5IiB4MT0iMCIgeTE9IjAiIHgyPSIwIiB5Mj0iMSI+PHN0b3Agb2Zmc2V0PSIwIiBzdG9wLWNvbG9yPSIjMmIxZDJlIi8+PHN0b3Agb2Zmc2V0PSIuNTUiIHN0b3AtY29sb3I9IiNhNTQ4MmMiLz48c3RvcCBvZmZzZXQ9IjEiIHN0b3AtY29sb3I9IiNlOWEyNGEiLz48L2xpbmVhckdyYWRpZW50PgogICAgPHJhZGlhbEdyYWRpZW50IGlkPSJleWUiIGN4PSI1MCUiIGN5PSI1MCUiIHI9IjUwJSI+PHN0b3Agb2Zmc2V0PSIwIiBzdG9wLWNvbG9yPSIjZmZmMmEwIi8+PHN0b3Agb2Zmc2V0PSIuMzUiIHN0b3AtY29sb3I9IiNmZjhhMWUiLz48c3RvcCBvZmZzZXQ9IjEiIHN0b3AtY29sb3I9IiNmZjRhMDAiIHN0b3Atb3BhY2l0eT0iMCIvPjwvcmFkaWFsR3JhZGllbnQ+CiAgICA8bGluZWFyR3JhZGllbnQgaWQ9ImdvbGQiIHgxPSIwIiB5MT0iMCIgeDI9IjEiIHkyPSIxIj48c3RvcCBvZmZzZXQ9IjAiIHN0b3AtY29sb3I9IiNmZmYxYTgiLz48c3RvcCBvZmZzZXQ9Ii41IiBzdG9wLWNvbG9yPSIjZTBiMDMwIi8+PHN0b3Agb2Zmc2V0PSIxIiBzdG9wLWNvbG9yPSIjOGE1YzA4Ii8+PC9saW5lYXJHcmFkaWVudD4KICA8L2RlZnM+CiAgPHJlY3Qgd2lkdGg9IjE2MDAiIGhlaWdodD0iMTAwMCIgZmlsbD0idXJsKCNza3kpIi8+CiAgPGNpcmNsZSBjeD0iMTIxMCIgY3k9IjI2MCIgcj0iMTQwIiBmaWxsPSJ1cmwoI2V5ZSkiLz4KICA8cGF0aCBkPSJNMTE5MCAyNjAgUTEyMTAgMjAwIDEyMzAgMjYwIFExMjEwIDMyMCAxMTkwIDI2MCBaIiBmaWxsPSIjMWEwYTAwIi8+CiAgPHBhdGggZD0iTTExODAgMzAwIEwxMjAwIDEyMCBMMTIyMCAxMjAgTDEyNDAgMzAwIFoiIGZpbGw9IiMxZDE0MTQiLz4KICA8cGF0aCBkPSJNMCA3MjAgTDE4MCA1NjAgTDMwMCA2NDAgTDQ3MCA0NzAgTDY0MCA2NTAgTDgyMCA1MjAgTDEwMDAgNjYwIEwxMTUwIDQzMCBMMTMzMCA2MTAgTDE0NjAgNTIwIEwxNjAwIDYyMCBMMTYwMCAxMDAwIEwwIDEwMDAgWiIgZmlsbD0iIzNiMmEyYSIvPgogIDxwYXRoIGQ9Ik0xMDgwIDcwMCBMMTE4MCA1NDAgTDEyMTUgNTYwIEwxMjUwIDU0MCBMMTM2MCA3MDAgWiIgZmlsbD0iIzIwMTQxNCIvPgogIDxwYXRoIGQ9Ik0xMjAwIDU0OCBRMTIxNSA1MDAgMTIzMiA1NDgiIGZpbGw9Im5vbmUiIHN0cm9rZT0iI2ZmNmExYSIgc3Ryb2tlLXdpZHRoPSIxMCIgb3BhY2l0eT0iLjg1Ii8+CiAgPHBhdGggZD0iTTAgODIwIFEzMDAgNzIwIDYyMCA4MDAgVDEyMDAgNzkwIFQxNjAwIDc2MCBMMTYwMCAxMDAwIEwwIDEwMDAgWiIgZmlsbD0iIzI2MzQxZiIvPgogIDxwYXRoIGQ9Ik0wIDkwMCBRNDAwIDgzMCA4MDAgOTAwIFQxNjAwIDg4MCBMMTYwMCAxMDAwIEwwIDEwMDAgWiIgZmlsbD0iIzE2MjAxMiIvPgogIDxnIHRyYW5zZm9ybT0idHJhbnNsYXRlKDQwMCw4NjApIiBmaWxsPSIjMGIwZjA4Ij4KICAgIDxwYXRoIGQ9Ik0tMzAgMCBMLTIyIC03MCBMLTEwIC05NSBMNSAtNzAgTDEyIDAgWiIvPjxjaXJjbGUgY3g9Ii0xMCIgY3k9Ii0xMDYiIHI9IjEzIi8+CiAgICA8cGF0aCBkPSJNMzAgMCBMMzYgLTU4IEw0NiAtNzggTDU4IC01OCBMNjIgMCBaIi8+PGNpcmNsZSBjeD0iNDYiIGN5PSItODgiIHI9IjExIi8+CiAgPC9nPgogIDxjaXJjbGUgY3g9IjgwMCIgY3k9IjUwMCIgcj0iMTUwIiBmaWxsPSJub25lIiBzdHJva2U9InVybCgjZ29sZCkiIHN0cm9rZS13aWR0aD0iMzQiIG9wYWNpdHk9Ii45Ii8+CiAgPGNpcmNsZSBjeD0iODAwIiBjeT0iNTAwIiByPSIxNTAiIGZpbGw9Im5vbmUiIHN0cm9rZT0iI2ZmZjZjOCIgc3Ryb2tlLXdpZHRoPSIzIiBvcGFjaXR5PSIuNiIvPgo8L3N2Zz4K"); background-size: cover;
+  background-position: center; filter: saturate(.9); }
+.landing .art::after { content: ""; position: absolute; inset: 0; background: linear-gradient(180deg, rgba(20,14,8,.25), rgba(20,14,8,.65)); }
+.landing .box { position: relative; width: min(460px, 100%); background: rgba(247,239,218,.96); border: 2px solid var(--gold);
+  border-radius: 14px; padding: 18px 18px 12px; box-shadow: 0 10px 40px rgba(0,0,0,.45); }
+.landing h1 { font-size: 26px; text-align: center; margin-bottom: 0; }
+.landing .sub { text-align: center; color: var(--muted); margin-bottom: 12px; }
+.field { margin: 10px 0; }
+.field > label { display: block; font-weight: 600; margin-bottom: 4px; }
+.seg { display: flex; flex-wrap: wrap; gap: 6px; }
+.seg button { flex: 1 1 auto; }
+.seg button.on { background: #3d2f1f; color: #fff5dc; border-color: #3d2f1f; }
+.check { display: flex; align-items: center; gap: 8px; margin: 6px 0; cursor: pointer; }
+.check input { width: 20px; height: 20px; }
+.row { display: flex; gap: 8px; flex-wrap: wrap; }
+.row > * { flex: 1 1 auto; }
+.foot { text-align: center; margin-top: 10px; font-size: 13px; }
+.foot a { cursor: pointer; }
+
+/* ---------- game shell ---------- */
+#game { height: 100dvh; display: grid; grid-template-rows: auto 1fr; overflow: hidden; }
+.top { display: flex; align-items: center; gap: 6px; padding: 4px 6px; background: #3d2f1f; color: #fff5dc; min-height: 44px; }
+.top button { background: transparent; color: #fff5dc; border-color: rgba(255,245,220,.25); padding: 4px 9px; min-height: 36px; }
+.top .title { font-family: Georgia, serif; font-weight: 700; white-space: nowrap; }
+.top .spacer { flex: 1; }
+.pills { display: flex; gap: 6px; flex-wrap: wrap; align-items: center; }
+.pill { display: inline-flex; gap: 6px; align-items: center; padding: 2px 8px; border-radius: 999px; background: rgba(255,255,255,.08);
+  border: 1px solid rgba(255,255,255,.18); font-size: 13px; white-space: nowrap; }
+.pill.active { box-shadow: 0 0 0 2px var(--gold2); }
+.pill .dot { width: 10px; height: 10px; border-radius: 50%; display: inline-block; }
+.main { display: grid; min-height: 0; overflow: hidden;
+  grid-template-columns: minmax(0, 1.3fr) minmax(0, 1fr) 360px; grid-template-areas: "cards map side"; }
+.view { min-width: 0; min-height: 0; display: flex; flex-direction: column; overflow: hidden; position: relative; }
+.v-cards { grid-area: cards; border-right: 1px solid var(--line); }
+.v-map { grid-area: map; }
+.side { grid-area: side; display: flex; flex-direction: column; min-height: 0; background: var(--panel); border-left: 1px solid var(--line); }
+.tabsbar { display: none; }
+.zoom { flex: 1; min-height: 0; overflow: hidden; position: relative; touch-action: none; }
+.zoom > .inner { transform-origin: 0 0; width: 100%; height: 100%; }
+.zoom svg { width: 100%; height: 100%; display: block; }
+.fit { position: absolute; right: 6px; top: 6px; z-index: 2; min-height: 32px; padding: 3px 8px; background: rgba(255,250,240,.9); }
+svg.quest { width: 100%; max-height: 170px; height: auto; display: block; flex: none; padding: 0 4px 4px; }
+.vtitle { font-family: Georgia, serif; font-weight: 700; padding: 4px 10px 0; display: flex; justify-content: space-between; align-items: baseline; }
+.vtitle small { font-family: inherit; font-weight: 400; color: var(--muted); }
+
+/* tiles */
+.tiles { display: flex; gap: 6px; padding: 6px; overflow-x: auto; flex: none; }
+.tile { flex: 1 1 0; min-width: 104px; border: 2px solid #8b7550; border-radius: 10px; background: linear-gradient(#f3e6c3, #e2cc98);
+  padding: 5px 6px; font-size: 12px; cursor: pointer; position: relative; text-align: left; min-height: 0; }
+.tile.legal { border-color: var(--gold); box-shadow: 0 0 0 2px var(--gold2); }
+.tile.locked { opacity: .55; }
+.tile .tn { font-weight: 700; font-family: Georgia, serif; font-size: 13px; }
+.tile .ts { letter-spacing: 1px; }
+.tile .tc { position: absolute; right: 4px; bottom: 3px; }
+.tile.fan .tn::after { content: " \2605"; color: #8a5a00; }
+.tile.empty { cursor: default; opacity: .5; border-style: dashed; background: none; }
+
+/* svg pieces */
+.card { cursor: default; }
+.card.avail { cursor: pointer; }
+.card.avail > rect.cf { stroke: var(--gold2); stroke-width: 4; }
+.card.target > rect.cf, .card.target > rect.cback { stroke: #ffde59; stroke-width: 6; }
+.card.dim { opacity: .5; }
+.cback { fill: #23402e; stroke: #b8892c; stroke-width: 2; }
+.ringback { fill: none; stroke: #e0b850; stroke-width: 4; }
+.slotgap { fill: none; stroke: #c9b48a; stroke-width: 2; stroke-dasharray: 6 5; }
+.region { cursor: default; }
+.region.target { cursor: pointer; }
+.region.target > circle.rc { stroke: #ffde59; stroke-width: 9; animation: pulse 1.2s ease-in-out infinite; }
+.region.sel > circle.rc { stroke: #fff; stroke-width: 10; }
+.region.flash > circle.rc { animation: flash .9s ease-out 1; }
+@keyframes pulse { 50% { stroke-opacity: .35; } }
+@keyframes flash { 0% { stroke: #fff; stroke-width: 18; } 100% { stroke-width: 3; } }
+.noanim *, .noanim *::before { animation: none !important; transition: none !important; }
+
+/* side panel */
+.prompt { padding: 8px 10px; border-bottom: 1px solid var(--line); background: #fbf5e4; }
+.prompt .who { font-weight: 700; }
+.prompt .msg { margin: 2px 0 6px; }
+.opts { display: flex; flex-wrap: wrap; gap: 6px; max-height: 38vh; overflow: auto; }
+.opts button { flex: 1 1 auto; text-align: left; }
+.opts .mini { padding: 3px; min-height: 0; }
+.opts .mini svg { width: 62px; height: 88px; display: block; }
+.actrow { display: flex; gap: 6px; margin-top: 6px; }
+.actrow button { flex: 1; }
+.tabs { display: flex; border-bottom: 1px solid var(--line); }
+.tabs button { flex: 1; border: 0; border-radius: 0; background: transparent; border-bottom: 3px solid transparent; }
+.tabs button.on { border-bottom-color: var(--gold); font-weight: 700; }
+.tabbody { flex: 1; overflow: auto; padding: 8px 10px; min-height: 0; }
+.player { border: 1px solid var(--line); border-radius: 10px; padding: 8px; margin-bottom: 8px; background: #fffaf0; }
+.player.p0 { border-left: 6px solid var(--fel); } .player.p1 { border-left: 6px solid var(--sau); }
+.player.active { box-shadow: 0 0 0 2px var(--gold2); }
+.player h3 { margin: 0 0 4px; font-size: 16px; display: flex; justify-content: space-between; }
+.stats { display: grid; grid-template-columns: repeat(4, 1fr); gap: 4px; font-size: 13px; }
+.stats div { background: var(--parch); border-radius: 6px; padding: 2px 4px; text-align: center; }
+.stats b { display: block; font-size: 15px; }
+.sub2 { font-size: 13px; margin-top: 6px; }
+.chips { display: flex; flex-wrap: wrap; gap: 4px; margin-top: 3px; }
+.chip { font-size: 12px; padding: 1px 7px; border-radius: 999px; background: var(--parch); border: 1px solid var(--line); }
+.chip.miss { opacity: .35; }
+.cc { display: inline-block; width: 12px; height: 12px; border-radius: 3px; vertical-align: -1px; margin-right: 3px; }
+.ally { border: 1px dashed var(--line); border-radius: 8px; padding: 4px 6px; margin-top: 4px; font-size: 13px; }
+.ally b { font-family: Georgia, serif; }
+.ally button { margin-top: 4px; min-height: 32px; padding: 3px 8px; }
+.log { list-style: none; padding: 0; margin: 0; font-size: 13px; }
+.log li { padding: 3px 0; border-bottom: 1px dotted var(--line); }
+.log li.p0 { border-left: 3px solid var(--fel); padding-left: 6px; }
+.log li.p1 { border-left: 3px solid var(--sau); padding-left: 6px; }
+.log li.chapter, .log li.win { font-weight: 700; }
+.intel li { margin: 4px 0; }
+
+/* modal */
+.backdrop { position: fixed; inset: 0; background: rgba(20,14,8,.55); z-index: 50; display: grid; place-items: center; padding: 10px; }
+.modal { background: var(--panel); border: 2px solid var(--gold); border-radius: 14px; width: min(560px, 100%); max-height: 92dvh;
+  display: flex; flex-direction: column; box-shadow: 0 10px 40px rgba(0,0,0,.4); position: relative; }
+.modal .mh { display: flex; align-items: center; padding: 10px 12px 4px; gap: 6px; }
+.modal .mh h2 { flex: 1; margin: 0; font-size: 20px; }
+.modal .mh button { min-height: 34px; padding: 2px 10px; }
+.modal .mb { padding: 4px 14px 10px; overflow: auto; }
+.modal .mf { padding: 8px 12px 12px; display: flex; gap: 8px; flex-wrap: wrap; justify-content: flex-end; }
+.backdrop.docked { inset: auto 0 0 auto; width: min(380px, 100%); height: 100dvh; background: none; padding: 0; place-items: stretch; }
+.backdrop.docked .modal { max-height: 100dvh; height: 100%; border-radius: 0; }
+.cardbig { display: flex; gap: 12px; align-items: flex-start; }
+.cardbig svg { width: 130px; flex: none; }
+table.res { border-collapse: collapse; width: 100%; font-size: 14px; }
+table.res th, table.res td { border-bottom: 1px solid var(--line); padding: 4px 6px; text-align: center; }
+table.res th:first-child, table.res td:first-child { text-align: left; }
+.minis { display: flex; flex-wrap: wrap; gap: 6px; }
+.minis svg { width: 70px; height: 98px; }
+
+/* pass-and-play */
+.pass { position: fixed; inset: 0; z-index: 60; background: #2a2016; color: #fff5dc; display: grid; place-items: center; text-align: center; padding: 20px; }
+.pass h2 { font-size: 28px; }
+
+/* tests / debug */
+.testlist { padding: 12px; font: 13px/1.4 Consolas, monospace; }
+.testlist .f { color: var(--bad); white-space: pre-wrap; }
+.testlist .p { color: var(--ok); }
+.dbg { position: fixed; left: 6px; bottom: 6px; z-index: 40; background: rgba(0,0,0,.78); color: #d6ffd6; font: 12px/1.3 Consolas, monospace;
+  padding: 6px 8px; border-radius: 6px; max-width: 360px; }
+.dbg textarea { width: 100%; height: 120px; font: 11px Consolas, monospace; }
+.toast { position: fixed; left: 50%; top: 52px; transform: translateX(-50%); background: #3d2f1f; color: #fff5dc; padding: 6px 14px;
+  border-radius: 999px; z-index: 70; font-size: 14px; pointer-events: none; }
+
+.sheetbtn { display: none !important; float: right; min-height: 28px !important; padding: 0 8px !important; }
+
+/* ---------- fold open (2 columns, panel below) ---------- */
+@media (max-width: 1099px) {
+  .main { grid-template-columns: minmax(0, 1fr) minmax(0, 1fr); grid-template-rows: minmax(0, 1fr) minmax(0, 42%);
+    grid-template-areas: "cards map" "side side"; }
+  .side { border-left: 0; border-top: 1px solid var(--line); flex-direction: row; }
+  .side .prompt { width: 50%; border-bottom: 0; border-right: 1px solid var(--line); overflow: auto; }
+  .side .panelrest { width: 50%; display: flex; flex-direction: column; min-height: 0; }
+  .opts { max-height: none; }
+}
+@media (min-width: 1100px) { .side .panelrest { flex: 1; display: flex; flex-direction: column; min-height: 0; } }
+
+/* ---------- phone: one view at a time, bottom sheet ---------- */
+@media (max-width: 759px) {
+  .top .title, .top .chpill, .top [data-a="help"] { display: none; }
+  .pill { font-size: 12px; padding: 1px 6px; }
+  .main { grid-template-columns: 100%; grid-template-rows: auto minmax(0, 1fr) auto; grid-template-areas: "tabs" "view" "side"; }
+  .tabsbar { display: flex; grid-area: tabs; border-bottom: 1px solid var(--line); background: var(--parch2); }
+  .tabsbar button { flex: 1; border: 0; border-radius: 0; background: transparent; border-bottom: 3px solid transparent; min-height: 36px; }
+  .tabsbar button.on { border-bottom-color: var(--gold); font-weight: 700; }
+  .v-cards, .v-map { grid-area: view; border: 0; }
+  .main.show-cards .v-map, .main.show-map .v-cards { display: none; }
+  .side { flex-direction: column; max-height: 52dvh; border-top: 2px solid var(--gold); box-shadow: 0 -4px 14px rgba(0,0,0,.15); }
+  .side .prompt { width: auto; border-right: 0; border-bottom: 1px solid var(--line); }
+  .side .panelrest { width: auto; flex: 1; display: flex; flex-direction: column; min-height: 0; }
+  .side.min .panelrest { display: none; }
+  .side.min .opts { max-height: 30dvh; }
+  .opts { max-height: 26dvh; }
+  .sheetbtn { display: inline-block !important; }
+  .stats { grid-template-columns: repeat(4, 1fr); }
+  .tile { min-width: 96px; font-size: 11px; }
+}
+@media (prefers-reduced-motion: reduce) { * { animation: none !important; transition: none !important; } }
+
+</style>
+</head>
+<body>
+<div id="app"></div>
+<script>
+// ===== Content tables. Card IDs match card_ids/labelled_chapter*.jpg =====
+const SKILLS = ['Ru', 'St', 'Co', 'Kn', 'Le'];
+const SKILL_NAMES = {Ru: 'Ruse', St: 'Strength', Co: 'Courage', Kn: 'Knowledge', Le: 'Leadership'};
+const RACES = ['elves', 'dwarves', 'hobbits', 'humans', 'wizards', 'ents'];
+const RACE_NAMES = {elves: 'Elves', dwarves: 'Dwarves', hobbits: 'Hobbits', humans: 'Humans', wizards: 'Wizards', ents: 'Ents', eagle: 'Eagle'};
+const COLORS = ['grey', 'yellow', 'blue', 'green', 'red', 'purple'];
+const SIDES = ['fellowship', 'sauron'];
+const SIDE_NAMES = {fellowship: 'Fellowship', sauron: 'Sauron'};
+
+const REGIONS = [
+  {id: 'lindon', name: 'Lindon', color: '#2a6fa8', x: 130, y: 150},
+  {id: 'arnor', name: 'Arnor', color: '#2b2b2b', x: 400, y: 110},
+  {id: 'rhovanion', name: 'Rhovanion', color: '#6f9a2c', x: 760, y: 170},
+  {id: 'enedwaith', name: 'Enedwaith', color: '#8a1d3a', x: 330, y: 360},
+  {id: 'rohan', name: 'Rohan', color: '#1f6b34', x: 620, y: 380},
+  {id: 'gondor', name: 'Gondor', color: '#1b2f6b', x: 500, y: 570},
+  {id: 'mordor', name: 'Mordor', color: '#a01c1c', x: 850, y: 560},
+];
+const REGION_IDS = REGIONS.map(r => r.id);
+const EDGES = [
+  ['lindon', 'arnor'], ['arnor', 'rhovanion'], ['arnor', 'enedwaith'], ['enedwaith', 'rhovanion'], ['enedwaith', 'rohan'],
+  ['enedwaith', 'gondor'], ['rhovanion', 'rohan'], ['rohan', 'gondor'], ['rohan', 'mordor'], ['gondor', 'mordor'],
+];
+
+const QUEST_LEN = 14;
+const QUEST_BONUS = {3: 'coin', 6: 'unit', 9: 'turn', 12: 'fortress'};
+const UNITS_PER_SIDE = 15, FORTS_PER_SIDE = 7;
+const START_COINS = {fellowship: 3, sauron: 2};
+
+// Chapter layouts, rows top to bottom: [cards in row, faceup?]. x positions are centred, 2 units apart;
+// a card is covered by any card in the next row down whose x differs by 1.
+const LAYOUTS = {
+  1: [[2, 1], [3, 0], [4, 1], [5, 0], [6, 1]],
+  2: [[6, 1], [5, 0], [4, 1], [3, 0], [2, 1]],
+  3: [[2, 1], [3, 0], [4, 1], [2, 0], [4, 1], [3, 0], [2, 1]],
+};
+const LAYOUT_X3_ROW4 = [-2, 2];
+// Allies: Power tokens on facedown slots, [row, index in row] (allies page 6).
+const POWER_SLOTS = {1: [[1, 0], [1, 2]], 2: [[1, 1], [1, 3]], 3: [[3, 0], [3, 1]]};
+
+// id | colour | effect | cost | chain. Effects: coins:N quest:N skill:A B (A/B = choose one) race:R
+// units:N:r1,r2  purple:rmU,lose,move. Cost: skills plus Nc for coins. Chain: in:sym out:sym.
+const CARD_ROWS = `
+C1-01|red|units:1:enedwaith,rhovanion||out:helmet
+C1-02|yellow|coins:2||
+C1-03|yellow|coins:2||
+C1-04|grey|skill:St||
+C1-05|green|race:dwarves|Le|out:anvil
+C1-06|blue|quest:1||
+C1-07|blue|quest:1|1c|out:fish
+C1-08|grey|skill:Ru||
+C1-09|grey|skill:Kn||
+C1-10|grey|skill:Co||
+C1-11|red|units:1:lindon,arnor||out:sword
+C1-12|green|race:humans|Kn|out:horseshoe
+C1-13|red|units:1:gondor,rohan|Ru|out:bow
+C1-14|blue|quest:1|Co|out:satchel
+C1-15|green|race:hobbits|Le|out:teapot
+C1-16|green|race:elves|Kn|out:harp
+C1-17|blue|quest:1|St|out:horse
+C1-18|yellow|coins:2||
+C1-19|grey|skill:St||
+C1-20|yellow|coins:2||
+C1-21|grey|skill:Ru||
+C1-22|grey|skill:Co||
+C1-23|grey|skill:Le||
+C2-01|blue|quest:2|St Co Co|out:campfire
+C2-02|red|units:2:mordor,rohan|Ru Ru Kn|in:sword out:axe
+C2-03|grey|skill:Le/Kn|1c Ru|
+C2-04|red|units:2:arnor,rhovanion|Co Co Le|
+C2-05|green|race:dwarves|St St Le|in:anvil
+C2-06|yellow|coins:4||
+C2-07|grey|skill:Co Co|1c|
+C2-08|grey|skill:Le||
+C2-09|grey|skill:St St|1c|
+C2-10|blue|quest:2|St St Kn|out:scroll
+C2-11|red|units:2:lindon,rohan|Ru St Co|
+C2-12|red|units:2:gondor,mordor|Ru Ru Ru|in:bow
+C2-13|blue|quest:1|Co St|in:horse
+C2-14|green|race:elves|Co Le Kn|in:harp
+C2-15|green|race:humans|Co Co Kn|in:horseshoe out:parchment
+C2-16|blue|quest:1|Ru St|
+C2-17|red|units:2:lindon,enedwaith|St St Co|in:helmet out:tunic
+C2-18|yellow|coins:3||out:chest
+C2-19|grey|skill:Ru/St/Co|1c Le Kn|
+C2-20|grey|skill:Kn||
+C2-21|grey|skill:Ru Ru|1c|
+C2-22|green|race:hobbits|Ru Ru Le|in:teapot out:acorn
+C2-23|blue|quest:1|1c|in:satchel
+C3-01|red|units:3:gondor,arnor|Ru St Le Le Kn|in:axe
+C3-02|yellow|coins:5|Ru Ru Co|in:chest
+C3-03|blue|quest:2|Ru Ru Co Co|in:fish
+C3-04|purple|purple:rmU,lose,lose|Co Co Co Le|
+C3-05|green|race:wizards|Ru Ru Le Le|in:parchment
+C3-06|purple|purple:rmU,lose,move|St St Le|
+C3-07|red|units:3:enedwaith,rohan|St St Co Co|in:tunic
+C3-08|purple|purple:rmU,move,move|St St St Kn|
+C3-09|purple|purple:rmU,rmU,lose|St Co Kn Kn|
+C3-10|red|units:3:rhovanion,mordor|Ru St St Co Co|
+C3-11|yellow|coins:5|Ru Le Kn|
+C3-12|blue|quest:2|Ru St St St|in:campfire
+C3-13|red|units:3:rhovanion,gondor|Ru Ru Ru Le Le|
+C3-14|blue|quest:2|Ru Ru Ru Co|in:scroll
+C3-15|blue|quest:2|St St Le|
+C3-16|red|units:3:enedwaith,arnor|Ru Ru Co Co|
+C3-17|purple|purple:lose,move,move|Ru St Co Kn|
+C3-18|red|units:3:lindon,mordor|Ru Ru Co Kn Kn|
+C3-19|green|race:wizards|St St Le Kn|
+C3-20|green|race:ents|St St Kn Kn|in:acorn
+C3-21|purple|purple:move,move,move|Co Co Le Kn|
+C3-22|blue|quest:3|3c|
+C3-23|green|race:ents|Co Co Le Kn|
+`;
+
+const CHAIN_NAMES = {
+  helmet: 'Helmet', anvil: 'Anvil', fish: 'Fish', sword: 'Sword', horseshoe: 'Horseshoe', bow: 'Bow', satchel: 'Satchel',
+  teapot: 'Teapot', harp: 'Harp', horse: 'Horse', campfire: 'Campfire', axe: 'Axe', scroll: 'Scroll', tunic: 'Tunic',
+  chest: 'Treasure chest', parchment: 'Parchment', acorn: 'Acorn',
+};
+
+function parseCost(s) {
+  const c = {coins: 0, skills: []};
+  for (const t of (s || '').trim().split(/\s+/).filter(Boolean)) {
+    const m = t.match(/^(\d+)c$/);
+    if (m) c.coins += +m[1]; else c.skills.push(t);
+  }
+  return c;
+}
+
+function parseCards(text) {
+  const out = {};
+  for (const line of text.trim().split('\n')) {
+    const [id, color, eff, cost, chain] = line.split('|');
+    const card = {id, ch: +id[1], color, cost: parseCost(cost), chainIn: null, chainOut: null};
+    const [k, a, b] = eff.split(':');
+    if (k === 'coins') card.coins = +a;
+    else if (k === 'quest') card.quest = +a;
+    else if (k === 'race') card.race = a;
+    else if (k === 'units') { card.units = +a; card.regions = b.split(','); }
+    else if (k === 'purple') card.purple = a.split(',');
+    else if (k === 'skill') card.skills = a.split(' ').map(g => g.split('/'));
+    for (const t of (chain || '').trim().split(/\s+/).filter(Boolean)) {
+      const [dir, sym] = t.split(':');
+      if (dir === 'in') card.chainIn = sym; else card.chainOut = sym;
+    }
+    out[id] = card;
+  }
+  return out;
+}
+const CARDS = parseCards(CARD_ROWS);
+const CARD_IDS = Object.keys(CARDS);
+
+// Landmark tiles. fx: list of effect steps applied after the Fortress (see engine.js).
+const TILES = {
+  helms: {id: 'helms', name: "Helm's Deep", region: 'rohan', skills: 'Ru Ru Ru Le Le Kn', fx: [{k: 'units', n: 3, regions: ['rohan'], fixed: true}]},
+  bree: {id: 'bree', name: 'Bree', region: 'arnor', skills: 'St St St Co Co Le', fx: [{k: 'units', n: 2, regions: ['arnor'], fixed: true}, {k: 'move', n: 2}]},
+  greyhavens: {id: 'greyhavens', name: 'Grey Havens', region: 'lindon', skills: 'St St St Le Le Kn', fx: [{k: 'anyRaceDraw'}]},
+  minastirith: {id: 'minastirith', name: 'Minas Tirith', region: 'gondor', skills: 'Ru Ru Ru St Kn Kn', fx: [{k: 'units', n: 1, regions: ['gondor'], fixed: true}, {k: 'quest', n: 2}]},
+  erebor: {id: 'erebor', name: 'Erebor', region: 'rhovanion', skills: 'Ru St St Co Le Kn', fx: [{k: 'coins', n: 5}, {k: 'move', n: 1}]},
+  isengard: {id: 'isengard', name: 'Isengard', region: 'enedwaith', skills: 'Ru Ru Co Co Le Kn', fx: [{k: 'discardOppGrey'}, {k: 'quest', n: 1}]},
+  baraddur: {id: 'baraddur', name: 'Barad-D\u00fbr', region: 'mordor', skills: 'Co Co Co Le Le Kn', fx: [{k: 'discardPlay'}]},
+  shire: {id: 'shire', name: 'The Shire', fan: true, region: null, skills: 'Ru St Co Co Kn Kn', fx: [{k: 'shire'}]},
+  grond: {id: 'grond', name: 'Grond', fan: true, region: null, skills: 'Ru Ru St St Co Le', fx: [{k: 'grond'}]},
+};
+const TILE_TEXT = {
+  helms: 'Fortress and 3 Units in Rohan.',
+  bree: 'Fortress and 2 Units in Arnor, then 2 movements.',
+  greyhavens: 'Fortress in Lindon. Reveal the top 2 Alliance tokens of any Race, keep 1.',
+  minastirith: 'Fortress and 1 Unit in Gondor, then 2 Quest spaces.',
+  erebor: 'Fortress in Rhovanion, 5 Coins, then 1 movement.',
+  isengard: "Fortress in Enedwaith. Discard 1 Grey card from your opponent's play area, then 1 Quest space.",
+  baraddur: 'Fortress in Mordor. Look at the discard and play 1 card for free.',
+  shire: 'Fan tile. Play any faceup card of the current chapter for free, even if covered. No Fortress.',
+  grond: 'Fan tile. Remove 1 enemy Fortress; enemy Units there retreat to one adjacent region. Then place 1 Fortress and 1 Unit there.',
+};
+
+// Alliance tokens, 3 per Race. passive tokens set a hook; instant ones queue effect steps once.
+const TOKENS = {
+  'elves-yellow': {race: 'elves', kind: 'passive', hook: 'yellowTurn', text: 'When you play a Yellow card, take another turn.'},
+  'elves-red': {race: 'elves', kind: 'passive', hook: 'redAny', text: 'When you play a Red card, place its Units in any 1 region.'},
+  'elves-skill': {race: 'elves', kind: 'passive', hook: 'wildSkill', text: 'Once per turn, benefit from any Skill.'},
+  'dwarves-nofee': {race: 'dwarves', kind: 'passive', hook: 'noFortFee', text: 'When you play a Landmark, ignore the extra Coin cost.'},
+  'dwarves-turn': {race: 'dwarves', kind: 'passive', hook: 'landmarkTurn', text: 'When you play a Landmark, take another turn.'},
+  'dwarves-move': {race: 'dwarves', kind: 'passive', hook: 'greenMove', text: 'When you play a Green card, also complete 2 movements.'},
+  'hobbits-eagle': {race: 'hobbits', kind: 'passive', hook: 'eagle', text: 'Eagle: an extra Race symbol for the Support of the Races victory.'},
+  'hobbits-blue': {race: 'hobbits', kind: 'passive', hook: 'blueUnit', text: 'When you play a Blue card, also place 1 Unit in any region.'},
+  'hobbits-chain': {race: 'hobbits', kind: 'passive', hook: 'chainCoins', text: 'When you play a card by chaining, take 3 Coins.'},
+  'humans-yellow': {race: 'humans', kind: 'passive', hook: 'yellowQuest', text: 'When you play a Yellow card, also move 1 Quest space.'},
+  'humans-red': {race: 'humans', kind: 'passive', hook: 'redPlus', text: 'When you play a Red card, place 1 extra Unit.'},
+  'humans-discard': {race: 'humans', kind: 'passive', hook: 'discardDouble', text: 'When you discard a card, take 2x the chapter Coins.'},
+  'ents-turn': {race: 'ents', kind: 'instant', fx: [{k: 'extraTurn'}], text: 'Take another turn.'},
+  'ents-fort': {race: 'ents', kind: 'instant', fx: [{k: 'removeFortress'}], text: 'Remove 1 enemy Fortress.'},
+  'ents-x3': {race: 'ents', kind: 'instant', fx: [{k: 'entsChoice'}, {k: 'entsChoice'}, {k: 'entsChoice'}], text: '3 times: remove 1 enemy Unit, opponent loses 1 Coin, or 1 movement.'},
+  'wizards-quest': {race: 'wizards', kind: 'instant', fx: [{k: 'quest', n: 2}], text: 'Move 2 Quest spaces.'},
+  'wizards-units': {race: 'wizards', kind: 'instant', fx: [{k: 'units2'}], text: '2 Units in 1 region, or 1 Unit in 2 regions.'},
+  'wizards-discard': {race: 'wizards', kind: 'instant', fx: [{k: 'discardPlay'}], text: 'Look at the discard and play 1 card for free.'},
+};
+
+// Allies expansion. side: who owns it. enter/exit: effect steps (actor-relative, so Warg can copy exits).
+const ALLIES = {
+  tom: {side: 'fellowship', name: 'Tom Bombadil', enter: [{k: 'questBlock', n: 1}], exit: [{k: 'questBlock', n: 2}],
+    et: '1 Power token on the Nazg\u00fbl: Sauron spends 1 Ring to remove it before moving.', xt: '2 Power tokens on the Nazg\u00fbl.'},
+  goldberry: {side: 'fellowship', name: 'Goldberry', enter: [{k: 'coins', n: 3}], exit: [{k: 'coins', n: 5}, {k: 'loseCoin', n: 2, forced: true}],
+    et: 'Take 3 Coins.', xt: 'Take 5 Coins and your opponent loses 2.'},
+  elrond: {side: 'fellowship', name: 'Elrond', enter: [{k: 'takeTopToken', races: ['dwarves', 'humans', 'elves', 'hobbits']}], exit: [{k: 'takeTopToken', races: ['wizards', 'ents']}],
+    et: 'Take the top Alliance token of the Dwarves, Humans, Elves or Hobbits.', xt: 'Take the top Alliance token of the Wizards or Ents.'},
+  arwen: {side: 'fellowship', name: 'Arwen', enter: [{k: 'discardRandom'}], exit: [{k: 'discardPlay'}],
+    et: 'Play a random discard card (you pick its chapter) for free.', xt: 'Look at the discard and play 1 card for free.'},
+  lobelia: {side: 'fellowship', name: 'Lobelia Sackville-Baggins', enter: [{k: 'units', n: 1, regions: 'any'}, {k: 'move', n: 1}], exit: [{k: 'units2'}, {k: 'move', n: 2}],
+    et: '1 Unit in any region, then 1 movement.', xt: '2 Units in 1 region or 1 in 2 regions, then 2 movements.'},
+  boromir: {side: 'fellowship', name: 'Boromir', enter: [{k: 'removeUnit'}], exit: [{k: 'removeAllUnits'}],
+    et: 'Remove 1 enemy Unit.', xt: 'Remove all enemy Units from 1 region.'},
+  faramir: {side: 'fellowship', name: 'Faramir', enter: [{k: 'discardAvail'}], exit: [{k: 'discardAvail'}, {k: 'reveal'}, {k: 'discardAvail'}],
+    et: 'Discard 1 available card (no Coins).', xt: 'Discard 1 available card, reveal, discard another (no Coins).'},
+  witchking: {side: 'sauron', name: 'Witch-King', enter: [{k: 'questOrUnit'}], exit: [{k: 'quest', n: 1}, {k: 'units', n: 1, regions: 'any'}],
+    et: 'Nazg\u00fbl 1 space OR 1 Unit in any region.', xt: 'Nazg\u00fbl 1 space AND 1 Unit in any region.'},
+  shelob: {side: 'sauron', name: 'Shelob', enter: [{k: 'lockStack'}], exit: [{k: 'discardOppToken'}],
+    et: 'Lock an Alliance token stack: your opponent can no longer take from it.', xt: "Discard 1 Alliance token from your opponent's play area."},
+  uruk: {side: 'sauron', name: 'Uruk-Hai Chief', enter: [{k: 'lockTile'}], exit: [{k: 'freeTile'}],
+    et: 'Lock a faceup Landmark: your opponent cannot take it.', xt: 'Take a faceup Landmark and play it for free.'},
+  balrog: {side: 'sauron', name: 'Balrog', enter: [{k: 'blockEdge'}], exit: [{k: 'blockEdge', strike: true}],
+    et: 'Block a connection for enemy movement.', xt: 'Block a connection and remove 1 enemy Unit from both its regions.'},
+  warg: {side: 'sauron', name: 'Warg', enter: [{k: 'forceReveal'}], exit: [{k: 'copyExit'}],
+    et: 'A random hidden enemy Ally is revealed without its enter effect.', xt: "Apply the exit effect of an enemy Ally in play, for yourself."},
+  troll: {side: 'sauron', name: 'Cave-Troll', enter: [{k: 'discardOppGrey'}], exit: [{k: 'stealGrey'}],
+    et: "Discard 1 Grey card from your opponent's play area.", xt: "Take 1 Grey card from your opponent's play area."},
+  grima: {side: 'sauron', name: 'Gr\u00edma', enter: [{k: 'grima', mode: 'any'}], exit: [{k: 'grima', mode: 'discard'}],
+    et: 'Pick an available card: next turn your opponent must take it and play or discard it.', xt: 'Pick an available card: next turn your opponent must take it and discard it.'},
+};
+
+const SETS = {base: 'Base game', fan: 'Fan tiles: The Shire and Grond', allies: 'Allies expansion'};
+
+// ===== Rules engine: state in, legal actions and new state out. No DOM access. =====
+const APP_VERSION = '0.1';
+const CHANGELOG = [
+  {v: '0.1', date: '2026-10-30', items: [
+    'Full base game: 3 chapters, 69 cards, 7 Landmarks, Alliance tokens, Quest of the Ring and the central board.',
+    'Fan Landmark tiles The Shire and Grond, on by default.',
+    'Allies expansion as an optional setup toggle.',
+    'Human vs AI (Easy, Normal, Hard) on either side, or pass and play.',
+    'Phone, fold and laptop layouts; journal, rival intel, statistics, sound.',
+    'Built-in rule tests (?test), self-play (?selfplay) and a debug overlay (?debug).',
+  ]},
+];
+
+// ---------- helpers ----------
+const opp = p => 1 - p;
+function rnd(S) {
+  let t = (S.rng = (S.rng + 0x6D2B79F5) >>> 0);
+  t = Math.imul(t ^ (t >>> 15), t | 1);
+  t ^= t + Math.imul(t ^ (t >>> 7), t | 61);
+  return ((t ^ (t >>> 14)) >>> 0) / 4294967296;
+}
+function shuffle(S, a) {
+  for (let i = a.length - 1; i > 0; i--) { const j = Math.floor(rnd(S) * (i + 1)); [a[i], a[j]] = [a[j], a[i]]; }
+  return a;
+}
+function log(S, text, kind = '') {
+  if (S.sim) return;
+  S.log.push({turn: S.turnNo, p: S.active, ch: S.chapter, text, kind});
+}
+const pname = (S, p) => (S.seats && S.seats[p] && S.seats[p].name) || SIDE_NAMES[SIDES[p]];
+const rname = r => (REGIONS.find(x => x.id === r) || {name: r}).name;
+const tokenRace = t => TOKENS[t].race;
+const hasHook = (P, h) => P.tokens.some(t => TOKENS[t].hook === h);
+const greens = P => P.cards.filter(id => CARDS[id].color === 'green').map(id => CARDS[id].race);
+function distinctRaces(P, withEagle = true) {
+  const n = new Set(greens(P)).size;
+  return n + (withEagle && hasHook(P, 'eagle') ? 1 : 0);
+}
+const present = (S, p, r) => S.board[r].u[p] > 0 || S.board[r].f[p] > 0;
+const regionCount = (S, p) => REGION_IDS.filter(r => present(S, p, r)).length;
+const fortsOnBoard = (S, p) => REGION_IDS.reduce((n, r) => n + S.board[r].f[p], 0);
+const neighbours = r => EDGES.map((e, i) => e[0] === r ? [e[1], i] : e[1] === r ? [e[0], i] : null).filter(Boolean);
+const edgeBlockedFor = (S, i, p) => S.blocked.some(b => b.e === i && b.vs === p);
+
+function mkPlayer(side) {
+  return {side, coins: START_COINS[side], cards: [], tokens: [], landmarks: [], units: UNITS_PER_SIDE, forts: FORTS_PER_SIDE,
+    quest: 0, pairs: {}, threeUsed: false, power: 0, allies: {hand: [], front: [], gone: []}};
+}
+
+// ---------- setup ----------
+function newGame(o = {}) {
+  const seed = (o.seed ?? Math.floor(Math.random() * 2 ** 31)) >>> 0;
+  const S = {
+    v: 1, seed, rng: seed, opts: {fan: o.fan !== false, allies: !!o.allies},
+    seats: o.seats || [{name: 'Fellowship', type: 'human', level: 'normal'}, {name: 'Sauron', type: 'ai', level: 'normal'}],
+    chapter: 0, slots: [], decks: {}, discard: [], tilesFace: [], tilesDeck: [], tileLocks: [], stacks: {}, stackLocks: [],
+    players: [mkPlayer('fellowship'), mkPlayer('sauron')], board: {}, blocked: [], questBlock: [0, 0],
+    active: 1, turnNo: 1, extra: 0, queue: [], pending: null, mainDone: false, allyUsed: false, forced: null,
+    log: [], winner: null, sim: false, irrev: false,
+  };
+  for (const r of REGION_IDS) S.board[r] = {u: [0, 0], f: [0, 0]};
+  S.board.arnor.u[0] = 2; S.board.mordor.u[1] = 2;
+  S.players[0].units -= 2; S.players[1].units -= 2;
+  for (const ch of [1, 2, 3]) S.decks[ch] = shuffle(S, CARD_IDS.filter(id => CARDS[id].ch === ch));
+  const base = shuffle(S, Object.keys(TILES).filter(t => !TILES[t].fan));
+  S.tilesFace = base.slice(0, 3);
+  S.tilesDeck = base.slice(3);
+  if (S.opts.fan) { S.tilesDeck.push('shire', 'grond'); shuffle(S, S.tilesDeck); }
+  for (const r of RACES) S.stacks[r] = shuffle(S, Object.keys(TOKENS).filter(t => TOKENS[t].race === r)).map(id => ({id, known: false}));
+  if (S.opts.allies) {
+    for (const p of [0, 1]) {
+      const mine = shuffle(S, Object.keys(ALLIES).filter(a => ALLIES[a].side === SIDES[p]));
+      S.players[p].allies.hand = mine.slice(0, 3);
+      S.players[p].power = 1;
+    }
+  }
+  log(S, 'Sauron begins. Chapter 1.', 'chapter');
+  setupChapter(S, 1);
+  return S;
+}
+
+function setupChapter(S, ch) {
+  S.chapter = ch;
+  const ids = S.decks[ch]; S.decks[ch] = [];
+  S.slots = [];
+  let k = 0;
+  LAYOUTS[ch].forEach(([n, face], r) => {
+    const xs = ch === 3 && r === 3 ? LAYOUT_X3_ROW4 : Array.from({length: n}, (_, i) => (i - (n - 1) / 2) * 2);
+    xs.forEach((x, i) => S.slots.push({id: ids[k++], r, i, x, face: !!face, taken: false, power: false}));
+  });
+  for (const s of S.slots) s.cover = S.slots.map((o, j) => o.r === s.r + 1 && Math.abs(o.x - s.x) === 1 ? j : -1).filter(j => j >= 0);
+  while (k < ids.length) S.discard.push({id: ids[k++], hidden: true, ch, seen: [false, false]});
+  if (S.opts.allies) for (const [r, i] of POWER_SLOTS[ch]) S.slots.find(s => s.r === r && s.i === i).power = true;
+  while (S.tilesFace.length < 3 && S.tilesDeck.length) S.tilesFace.push(S.tilesDeck.shift());
+  S.forced = null;
+  S.irrev = true;
+  if (ch > 1) log(S, `Chapter ${ch} begins.`, 'chapter');
+}
+
+const slotAvailable = (S, i) => { const s = S.slots[i]; return s && !s.taken && s.cover.every(j => S.slots[j].taken); };
+const availableSlots = S => S.slots.map((_, i) => i).filter(i => slotAvailable(S, i));
+
+function revealAvailable(S) {
+  for (const i of availableSlots(S)) {
+    const s = S.slots[i];
+    if (s.face) continue;
+    s.face = true; S.irrev = true;
+    if (s.power) {
+      s.power = false; S.players[S.active].power++;
+      log(S, `${pname(S, S.active)} gains a Power token.`, 'power');
+    }
+  }
+}
+
+// ---------- costs ----------
+function missingSkills(P, req) {
+  const need = {};
+  for (const s of req) need[s] = (need[s] || 0) + 1;
+  const choice = [];
+  for (const id of P.cards) {
+    const c = CARDS[id];
+    if (!c.skills) continue;
+    for (const g of c.skills) { if (g.length === 1) need[g[0]] = (need[g[0]] || 0) - 1; else choice.push(g); }
+  }
+  const wild = hasHook(P, 'wildSkill') ? 1 : 0;
+  const rec = i => {
+    if (i === choice.length) { let d = 0; for (const s in need) if (need[s] > 0) d += need[s]; return Math.max(0, d - wild); }
+    let best = rec(i + 1);
+    for (const s of choice[i]) if (need[s] > 0) { need[s]--; best = Math.min(best, rec(i + 1)); need[s]++; }
+    return best;
+  };
+  return rec(0);
+}
+function hasChain(P, sym) { return !!sym && P.cards.some(id => CARDS[id].chainOut === sym); }
+function cardCost(S, p, id) {
+  const P = S.players[p], c = CARDS[id];
+  if (hasChain(P, c.chainIn)) return {coins: 0, chain: true, missing: 0};
+  const missing = missingSkills(P, c.cost.skills);
+  return {coins: c.cost.coins + missing, chain: false, missing};
+}
+function tileCost(S, p, t) {
+  const P = S.players[p];
+  const fee = hasHook(P, 'noFortFee') ? 0 : fortsOnBoard(S, p);
+  const missing = missingSkills(P, TILES[t].skills.split(' '));
+  return {coins: fee + missing, fee, missing};
+}
+const enemyFortExists = (S, p) => REGION_IDS.some(r => S.board[r].f[opp(p)] > 0);
+function tileLegal(S, p, t) {
+  if (p === 0 && S.tileLocks.includes(t)) return false;
+  if (t === 'grond' && !enemyFortExists(S, p)) return false;
+  return tileCost(S, p, t).coins <= S.players[p].coins;
+}
+
+// ---------- legal actions ----------
+function allyActions(S, p) {
+  const acts = [];
+  if (!S.opts.allies || S.allyUsed) return acts;
+  const A = S.players[p].allies, pw = S.players[p].power;
+  if (pw >= 1) for (const a of A.hand) acts.push({t: 'ally', a, mode: 'enter'});
+  if (pw >= 2) for (const a of A.front) acts.push({t: 'ally', a, mode: 'exit'});
+  return acts;
+}
+function forcedSlot(S) {
+  const f = S.forced;
+  return f && f.p === S.active && slotAvailable(S, f.slot) ? f : null;
+}
+function legalActions(S) {
+  if (S.winner) return [];
+  if (S.pending) return S.pending.opts.map((_, i) => ({t: 'choose', i}));
+  const p = S.active, P = S.players[p], acts = [];
+  if (!S.mainDone) {
+    const f = forcedSlot(S);
+    const slots = f ? [f.slot] : availableSlots(S);
+    for (const i of slots) {
+      if (!f || f.mode === 'any') if (cardCost(S, p, S.slots[i].id).coins <= P.coins) acts.push({t: 'take', slot: i, mode: 'play'});
+      acts.push({t: 'take', slot: i, mode: 'discard'});
+    }
+    if (!f) for (const t of S.tilesFace) if (tileLegal(S, p, t)) acts.push({t: 'tile', tile: t});
+  }
+  acts.push(...allyActions(S, p));
+  if (S.mainDone) acts.push({t: 'end'});
+  return acts;
+}
+
+// ---------- apply ----------
+function apply(S, a) {
+  const N = structuredClone(S);
+  N.irrev = false;
+  act(N, a);
+  return N;
+}
+function act(N, a) {
+  const p = N.active, P = N.players[p];
+  if (a.t === 'choose') {
+    const pd = N.pending; N.pending = null;
+    choose(N, pd, pd.opts[a.i]);
+  } else if (a.t === 'take') {
+    const s = N.slots[a.slot], c = CARDS[s.id];
+    s.taken = true;
+    if (N.forced && N.forced.p === p) N.forced = null;
+    if (a.mode === 'discard') {
+      const n = N.chapter * (hasHook(P, 'discardDouble') ? 2 : 1);
+      N.discard.push({id: s.id, hidden: false, ch: c.ch, seen: [true, true]});
+      P.coins += n;
+      log(N, `${pname(N, p)} discards ${cardLabel(s.id)} for ${n} Coin${n > 1 ? 's' : ''}.`, 'discard');
+    } else {
+      const cost = cardCost(N, p, s.id);
+      P.coins -= cost.coins;
+      log(N, `${pname(N, p)} plays ${cardLabel(s.id)}${cost.chain ? ' by chaining' : cost.coins ? ` for ${cost.coins} Coin${cost.coins > 1 ? 's' : ''}` : ''}.`, 'play');
+      N.queue.push({k: 'playCard', id: s.id, chained: cost.chain});
+    }
+    N.queue.push({k: 'endMain'});
+  } else if (a.t === 'tile') {
+    const cost = tileCost(N, p, a.tile);
+    P.coins -= cost.coins;
+    N.tilesFace = N.tilesFace.filter(t => t !== a.tile);
+    log(N, `${pname(N, p)} builds ${TILES[a.tile].name}${cost.coins ? ` for ${cost.coins} Coin${cost.coins > 1 ? 's' : ''}` : ''}.`, 'tile');
+    N.queue.push(...tileSteps(N, p, a.tile), {k: 'endMain'});
+  } else if (a.t === 'ally') {
+    const A = P.allies, al = ALLIES[a.a];
+    N.allyUsed = true;
+    if (a.mode === 'enter') {
+      P.power -= 1; A.hand = A.hand.filter(x => x !== a.a); A.front.push(a.a);
+      log(N, `${pname(N, p)} calls upon ${al.name}: ${al.et}`, 'ally');
+      N.queue.push(...al.enter.map(st => ({...st})));
+    } else {
+      P.power -= 2; A.front = A.front.filter(x => x !== a.a); A.gone.push(a.a);
+      log(N, `${pname(N, p)} sends ${al.name} away: ${al.xt}`, 'ally');
+      N.queue.push(...al.exit.map(st => ({...st})));
+    }
+    N.irrev = true;
+    N.queue.push({k: 'afterAlly'});
+  } else if (a.t === 'end') {
+    endTurn(N);
+    return;
+  }
+  run(N);
+}
+function tileSteps(N, p, t) {
+  const T = TILES[t], P = N.players[p], steps = [];
+  P.landmarks.push(t);
+  if (T.region) steps.push({k: 'fortress', region: T.region});
+  steps.push(...T.fx.map(st => ({...st})));
+  if (hasHook(P, 'landmarkTurn')) steps.push({k: 'extraTurn'});
+  return steps;
+}
+
+function run(N) {
+  while (!N.pending && N.queue.length && !N.winner) {
+    const st = N.queue.shift();
+    if (st.p === undefined) st.p = N.active;
+    exec(N, st);
+    checkWin(N);
+  }
+  if (N.winner) { N.queue = []; N.pending = null; }
+}
+
+function checkWin(N) {
+  if (N.winner) return;
+  const order = [N.active, opp(N.active)];
+  for (const p of order) {
+    const P = N.players[p];
+    let reason = null;
+    if (P.quest >= QUEST_LEN) reason = 'quest';
+    else if (distinctRaces(P) >= 6) reason = 'races';
+    else if (regionCount(N, p) === 7) reason = 'conquest';
+    if (reason) { N.winner = {p, reason}; log(N, `${pname(N, p)} wins: ${REASONS[reason]}!`, 'win'); return; }
+  }
+}
+const REASONS = {quest: 'Quest of the Ring', races: 'Support of the Races', conquest: 'Conquest of Middle-earth', regions: 'most regions at the end of chapter 3'};
+
+function endTurn(N) {
+  if (N.winner) return;
+  if (N.extra > 0) { N.extra--; log(N, `${pname(N, N.active)} takes another turn.`, 'turn'); }
+  else N.active = opp(N.active);
+  N.turnNo++;
+  N.mainDone = false; N.allyUsed = false;
+  if (N.forced && N.forced.p === N.active && !slotAvailable(N, N.forced.slot)) N.forced = null;
+}
+function maybeAutoEnd(N) {
+  if (N.winner || N.pending || N.queue.length || !N.mainDone) return;
+  if (allyActions(N, N.active).length) return;
+  endTurn(N);
+}
+function endChapter(N) {
+  if (N.chapter === 3) {
+    const a = regionCount(N, 0), b = regionCount(N, 1);
+    N.winner = {p: a === b ? 'tie' : a > b ? 0 : 1, reason: 'regions'};
+    log(N, a === b ? `Chapter 3 ends: ${a} regions each, a shared victory.` : `Chapter 3 ends: ${pname(N, N.winner.p)} wins with ${Math.max(a, b)} regions to ${Math.min(a, b)}.`, 'win');
+  } else setupChapter(N, N.chapter + 1);
+}
+
+// ---------- effect steps ----------
+function ask(N, st, type, prompt, opts) {
+  if (!opts.length) return false;
+  N.pending = {type, p: st.p, prompt, st, opts};
+  return true;
+}
+const regionOpts = (regs, extra = {}) => regs.map(r => ({label: rname(r), region: r, ...extra}));
+const SKIP = {label: 'Skip', skip: true};
+
+function placeUnits(N, p, r, n) {
+  const P = N.players[p], k = Math.min(n, P.units);
+  N.board[r].u[p] += k; P.units -= k;
+  if (k) log(N, `${pname(N, p)} places ${k} Unit${k > 1 ? 's' : ''} in ${rname(r)}.`, 'units');
+  if (k < n) log(N, `${pname(N, p)} has no Units left: ${n - k} lost.`, 'units');
+  conflict(N, r);
+}
+function conflict(N, r) {
+  const b = N.board[r];
+  let n = 0;
+  while (b.u[0] > 0 && b.u[1] > 0) { b.u[0]--; b.u[1]--; N.players[0].units++; N.players[1].units++; n++; }
+  if (n) log(N, `Conflict in ${rname(r)}: each side loses ${n} Unit${n > 1 ? 's' : ''}.`, 'conflict');
+}
+function moveOpts(N, p) {
+  const o = [];
+  for (const r of REGION_IDS) if (N.board[r].u[p] > 0)
+    for (const [to, e] of neighbours(r)) if (!edgeBlockedFor(N, e, p)) o.push({label: `${rname(r)} \u2192 ${rname(to)}`, from: r, to});
+  return o;
+}
+function gainToken(N, p, t) {
+  const P = N.players[p];
+  P.tokens.push(t);
+  log(N, `${pname(N, p)} gains the ${RACE_NAMES[tokenRace(t)]} token: ${TOKENS[t].text}`, 'token');
+  if (TOKENS[t].kind === 'instant') N.queue.unshift(...TOKENS[t].fx.map(st => ({...st, p})));
+}
+const stackOpen = (N, p, r) => N.stacks[r].length && !(p === 0 && N.stackLocks.includes(r));
+function drawTokens(N, st, races, each) {
+  const drawn = [];
+  for (const r of races) {
+    if (!stackOpen(N, st.p, r)) continue;
+    for (let i = 0; i < each && N.stacks[r].length; i++) drawn.push(N.stacks[r].shift().id);
+  }
+  if (!drawn.length) { log(N, 'No Alliance token is available.', 'token'); return; }
+  N.irrev = true;
+  if (drawn.length === 1) { gainToken(N, st.p, drawn[0]); return; }
+  ask(N, {...st, drawn}, 'token', 'Choose an Alliance token to keep', drawn.map(t => ({label: `${RACE_NAMES[tokenRace(t)]}: ${TOKENS[t].text}`, token: t})));
+}
+
+function exec(N, st) {
+  const p = st.p, P = N.players[p], O = N.players[opp(p)], c = st.id && CARDS[st.id];
+  switch (st.k) {
+    case 'playCard': {
+      P.cards.push(st.id);
+      const steps = [];
+      if (st.chained && hasHook(P, 'chainCoins')) steps.push({k: 'coins', n: 3});
+      if (c.color === 'yellow') {
+        steps.push({k: 'coins', n: c.coins});
+        if (hasHook(P, 'yellowTurn')) steps.push({k: 'extraTurn'});
+        if (hasHook(P, 'yellowQuest')) steps.push({k: 'quest', n: 1});
+      } else if (c.color === 'blue') {
+        steps.push({k: 'quest', n: c.quest});
+        if (hasHook(P, 'blueUnit')) steps.push({k: 'units', n: 1, regions: 'any'});
+      } else if (c.color === 'red') {
+        steps.push({k: 'units', n: c.units + (hasHook(P, 'redPlus') ? 1 : 0), regions: hasHook(P, 'redAny') ? 'any' : c.regions});
+      } else if (c.color === 'green') {
+        if (hasHook(P, 'greenMove')) steps.push({k: 'move', n: 2});
+        steps.push({k: 'alliances', race: c.race});
+      } else if (c.color === 'purple') {
+        for (const x of c.purple) steps.push(x === 'rmU' ? {k: 'removeUnit'} : x === 'lose' ? {k: 'loseCoin', n: 1} : {k: 'move', n: 1});
+      }
+      N.queue.unshift(...steps.map(s => ({...s, p})));
+      break;
+    }
+    case 'coins': P.coins += st.n; if (st.n) log(N, `${pname(N, p)} takes ${st.n} Coin${st.n > 1 ? 's' : ''}.`, 'coins'); break;
+    case 'loseCoin': {
+      const n = Math.min(st.n, O.coins);
+      O.coins -= n;
+      if (n) log(N, `${pname(N, opp(p))} loses ${n} Coin${n > 1 ? 's' : ''}.`, 'coins');
+      break;
+    }
+    case 'quest': {
+      const bonus = [];
+      for (let i = 0; i < st.n; i++) {
+        if (N.questBlock[p] > 0) { N.questBlock[p]--; log(N, `${pname(N, p)} spends a Ring to remove a Power token from the Quest track.`, 'quest'); continue; }
+        P.quest++;
+        if (P.quest >= QUEST_LEN) { log(N, p === 0 ? 'Frodo and Sam reach Mount Doom!' : 'The Nazg\u00fbl catch Frodo and Sam!', 'quest'); return; }
+        const b = QUEST_BONUS[P.quest];
+        if (b === 'coin') bonus.push({k: 'coins', n: 1, p});
+        else if (b === 'unit') bonus.push({k: 'units', n: 1, regions: 'any', optional: true, p});
+        else if (b === 'turn') bonus.push({k: 'askTurn', p});
+        else if (b === 'fortress') bonus.push({k: 'removeFortress', p});
+      }
+      log(N, `${p === 0 ? 'Frodo and Sam' : 'The Nazg\u00fbl'} ${p === 0 ? 'advance' : 'close in'}: ${P.quest}/${QUEST_LEN}.`, 'quest');
+      N.queue.unshift(...bonus);
+      break;
+    }
+    case 'askTurn':
+      ask(N, st, 'turn', 'Quest bonus: take another turn after this one?', [{label: 'Take another turn', yes: true}, {label: 'Decline', skip: true}]);
+      break;
+    case 'extraTurn': N.extra++; log(N, `${pname(N, p)} will take another turn.`, 'turn'); break;
+    case 'questOrUnit':
+      ask(N, st, 'choice', 'Witch-King: move the Nazg\u00fbl or place a Unit?', [{label: 'Move 1 Quest space', step: {k: 'quest', n: 1}}, {label: 'Place 1 Unit in any region', step: {k: 'units', n: 1, regions: 'any'}}]);
+      break;
+    case 'questBlock':
+      N.questBlock[opp(p)] += st.n;
+      log(N, `${st.n} Power token${st.n > 1 ? 's' : ''} block ${opp(p) === 1 ? 'the Nazg\u00fbl' : 'Frodo and Sam'} on the Quest track.`, 'quest');
+      break;
+    case 'units': {
+      const regs = st.regions === 'any' ? REGION_IDS : st.regions;
+      if (P.units === 0) { log(N, `${pname(N, p)} has no Units left to place.`, 'units'); break; }
+      if (regs.length === 1 && !st.optional) { placeUnits(N, p, regs[0], st.n); break; }
+      ask(N, st, 'region', `Place ${st.n} Unit${st.n > 1 ? 's' : ''}: choose a region`, [...regionOpts(regs), ...(st.optional ? [SKIP] : [])]);
+      break;
+    }
+    case 'units2': {
+      if (P.units === 0) break;
+      const o = REGION_IDS.map(r => ({label: `2 in ${rname(r)}`, regions: [r, r]}));
+      for (let i = 0; i < 7; i++) for (let j = i + 1; j < 7; j++) o.push({label: `1 in ${rname(REGION_IDS[i])}, 1 in ${rname(REGION_IDS[j])}`, regions: [REGION_IDS[i], REGION_IDS[j]]});
+      ask(N, st, 'units2', 'Place 2 Units in 1 region, or 1 Unit in 2 regions', o);
+      break;
+    }
+    case 'move': {
+      if (st.n <= 0) break;
+      const o = moveOpts(N, p);
+      ask(N, st, 'move', `Movement (${st.n} left): move 1 Unit to an adjacent region`, o.length ? [...o, {label: 'Skip remaining movements', skip: true}] : []);
+      break;
+    }
+    case 'removeUnit': {
+      const regs = REGION_IDS.filter(r => N.board[r].u[opp(p)] > 0);
+      ask(N, st, 'remove', 'Remove 1 enemy Unit: choose a region', [...regionOpts(regs), ...(regs.length ? [SKIP] : [])]);
+      break;
+    }
+    case 'removeAllUnits': {
+      const regs = REGION_IDS.filter(r => N.board[r].u[opp(p)] > 0);
+      ask(N, st, 'removeAll', 'Remove all enemy Units from a region', [...regionOpts(regs), ...(regs.length ? [SKIP] : [])]);
+      break;
+    }
+    case 'fortress':
+      if (P.forts > 0) { P.forts--; N.board[st.region].f[p]++; log(N, `${pname(N, p)} places a Fortress in ${rname(st.region)}.`, 'fort'); }
+      break;
+    case 'removeFortress': {
+      const regs = REGION_IDS.filter(r => N.board[r].f[opp(p)] > 0);
+      ask(N, st, 'removeFort', 'Remove 1 enemy Fortress: choose a region', [...regionOpts(regs), ...(regs.length ? [SKIP] : [])]);
+      break;
+    }
+    case 'alliances': {
+      const pair = greens(P).filter(r => r === st.race).length >= 2 && !P.pairs[st.race];
+      const three = !P.threeUsed && distinctRaces(P, false) >= 3;
+      const pairStep = {k: 'pairDraw', race: st.race, p}, threeStep = {k: 'threeDraw', p};
+      if (pair && three) ask(N, st, 'order', 'Two alliances trigger: which first?', [{label: `2 matching ${RACE_NAMES[st.race]} first`, steps: [pairStep, threeStep]}, {label: '3 different Races first', steps: [threeStep, pairStep]}]);
+      else if (pair) N.queue.unshift(pairStep);
+      else if (three) N.queue.unshift(threeStep);
+      break;
+    }
+    case 'pairDraw': P.pairs[st.race] = true; drawTokens(N, st, [st.race], 2); break;
+    case 'threeDraw': P.threeUsed = true; drawTokens(N, st, [...new Set(greens(P))].slice(0, 3), 1); break;
+    case 'anyRaceDraw': {
+      const races = RACES.filter(r => stackOpen(N, p, r));
+      ask(N, st, 'race', 'Grey Havens: reveal the top 2 tokens of which Race?', races.map(r => ({label: RACE_NAMES[r], race: r})));
+      break;
+    }
+    case 'takeTopToken': {
+      const races = st.races.filter(r => stackOpen(N, p, r));
+      ask(N, st, 'race', 'Take the top Alliance token of which Race?', races.map(r => ({label: RACE_NAMES[r], race: r})));
+      break;
+    }
+    case 'entsChoice': {
+      const o = [];
+      if (REGION_IDS.some(r => N.board[r].u[opp(p)] > 0)) o.push({label: 'Remove 1 enemy Unit', step: {k: 'removeUnit'}});
+      if (O.coins > 0) o.push({label: 'Opponent loses 1 Coin', step: {k: 'loseCoin', n: 1}});
+      if (moveOpts(N, p).length) o.push({label: 'Complete 1 movement', step: {k: 'move', n: 1}});
+      if (o.length) o.push(SKIP);
+      ask(N, st, 'choice', 'Ents: choose one', o);
+      break;
+    }
+    case 'discardPlay': {
+      for (const d of N.discard) d.seen[p] = true;
+      N.irrev = true;
+      ask(N, st, 'discard', 'Choose a card from the discard to play for free', N.discard.map((d, i) => ({label: cardLabel(d.id), di: i, card: d.id})));
+      break;
+    }
+    case 'discardRandom': {
+      const chs = [...new Set(N.discard.map(d => d.ch))].sort();
+      ask(N, st, 'chapter', 'Arwen: draw a random discard card from which chapter?', chs.map(ch => ({label: `Chapter ${ch} (${N.discard.filter(d => d.ch === ch).length} cards)`, ch})));
+      break;
+    }
+    case 'discardOppGrey': {
+      const greys = O.cards.filter(id => CARDS[id].color === 'grey');
+      ask(N, st, 'grey', "Discard 1 Grey card from your opponent's play area", greys.map(id => ({label: cardLabel(id), card: id})));
+      break;
+    }
+    case 'stealGrey': {
+      const greys = O.cards.filter(id => CARDS[id].color === 'grey');
+      ask(N, st, 'grey', "Take 1 Grey card from your opponent's play area", greys.map(id => ({label: cardLabel(id), card: id, steal: true})));
+      break;
+    }
+    case 'shire': {
+      const o = N.slots.map((s, i) => ({s, i})).filter(({s}) => !s.taken && s.face).map(({s, i}) => ({label: cardLabel(s.id), slot: i, card: s.id}));
+      ask(N, st, 'shire', 'The Shire: play any faceup card of this chapter for free', o);
+      break;
+    }
+    case 'grond': {
+      const regs = REGION_IDS.filter(r => N.board[r].f[opp(p)] > 0);
+      ask(N, st, 'grond', 'Grond: remove an enemy Fortress from which region?', regionOpts(regs));
+      break;
+    }
+    case 'grondPlace':
+      N.queue.unshift({k: 'fortress', region: st.region, p});
+      placeUnits(N, p, st.region, 1);
+      break;
+    case 'reveal': revealAvailable(N); break;
+    case 'discardAvail': {
+      const o = availableSlots(N).map(i => ({label: cardLabel(N.slots[i].id), slot: i, card: N.slots[i].id}));
+      ask(N, st, 'faramir', 'Faramir: discard 1 available card (no Coins)', o);
+      break;
+    }
+    case 'lockStack': {
+      const races = RACES.filter(r => !N.stackLocks.includes(r));
+      ask(N, st, 'race', 'Shelob: lock which Alliance token stack?', races.map(r => ({label: RACE_NAMES[r], race: r, lock: true})));
+      break;
+    }
+    case 'discardOppToken':
+      ask(N, st, 'oppToken', "Discard 1 Alliance token from your opponent's play area", O.tokens.map(t => ({label: `${RACE_NAMES[tokenRace(t)]}: ${TOKENS[t].text}`, token: t})));
+      break;
+    case 'lockTile': {
+      const ts = N.tilesFace.filter(t => !N.tileLocks.includes(t));
+      ask(N, st, 'tile', 'Uruk-Hai Chief: lock which Landmark?', ts.map(t => ({label: TILES[t].name, tile: t, lock: true})));
+      break;
+    }
+    case 'freeTile':
+      ask(N, st, 'tile', 'Take a faceup Landmark for free', N.tilesFace.filter(t => t !== 'grond' || enemyFortExists(N, p)).map(t => ({label: TILES[t].name, tile: t})));
+      break;
+    case 'blockEdge': {
+      const o = EDGES.map((e, i) => ({e, i})).filter(({i}) => !N.blocked.some(b => b.e === i)).map(({e, i}) => ({label: `${rname(e[0])} \u2013 ${rname(e[1])}`, edge: i}));
+      ask(N, st, 'edge', st.strike ? 'Balrog: block a connection and strike both regions' : 'Balrog: block which connection?', o);
+      break;
+    }
+    case 'forceReveal': {
+      const A = O.allies;
+      if (!A.hand.length) break;
+      const a = A.hand.splice(Math.floor(rnd(N) * A.hand.length), 1)[0];
+      A.front.push(a); N.irrev = true;
+      log(N, `${ALLIES[a].name} is forced into play without its enter effect.`, 'ally');
+      break;
+    }
+    case 'copyExit':
+      ask(N, st, 'copy', "Warg: apply which enemy Ally's exit effect for yourself?", O.allies.front.map(a => ({label: `${ALLIES[a].name}: ${ALLIES[a].xt}`, ally: a})));
+      break;
+    case 'grima': {
+      const o = availableSlots(N).map(i => ({label: cardLabel(N.slots[i].id), slot: i, card: N.slots[i].id}));
+      ask(N, st, 'grima', st.mode === 'any' ? 'Gr\u00edma: your opponent must take which card (play or discard)?' : 'Gr\u00edma: your opponent must take and discard which card?', o);
+      break;
+    }
+    case 'endMain':
+      revealAvailable(N);
+      if (N.slots.every(s => s.taken)) endChapter(N);
+      N.mainDone = true;
+      checkWin(N);
+      maybeAutoEnd(N);
+      break;
+    case 'afterAlly':
+      revealAvailable(N);
+      if (N.slots.every(s => s.taken)) {
+        endChapter(N);
+        if (N.chapter === 3 && N.winner) break;
+      }
+      maybeAutoEnd(N);
+      break;
+  }
+}
+
+function choose(N, pd, o) {
+  const st = pd.st, p = st.p, P = N.players[p], O = N.players[opp(p)];
+  if (o.skip) { log(N, `${pname(N, p)} skips.`, 'skip'); return; }
+  switch (pd.type) {
+    case 'region':
+      placeUnits(N, p, o.region, st.n); break;
+    case 'units2':
+      if (o.regions[0] === o.regions[1]) placeUnits(N, p, o.regions[0], 2);
+      else { placeUnits(N, p, o.regions[0], 1); placeUnits(N, p, o.regions[1], 1); }
+      break;
+    case 'move':
+      N.board[o.from].u[p]--; N.board[o.to].u[p]++;
+      log(N, `${pname(N, p)} moves a Unit ${rname(o.from)} \u2192 ${rname(o.to)}.`, 'move');
+      conflict(N, o.to);
+      if (st.n > 1) N.queue.unshift({k: 'move', n: st.n - 1, p});
+      break;
+    case 'remove':
+      N.board[o.region].u[opp(p)]--; O.units++;
+      log(N, `${pname(N, p)} removes an enemy Unit from ${rname(o.region)}.`, 'remove'); break;
+    case 'removeAll': {
+      const n = N.board[o.region].u[opp(p)];
+      N.board[o.region].u[opp(p)] = 0; O.units += n;
+      log(N, `${pname(N, p)} removes ${n} enemy Unit${n > 1 ? 's' : ''} from ${rname(o.region)}.`, 'remove'); break;
+    }
+    case 'removeFort':
+      N.board[o.region].f[opp(p)]--; O.forts++;
+      log(N, `${pname(N, p)} removes an enemy Fortress from ${rname(o.region)}.`, 'fort'); break;
+    case 'turn': N.queue.unshift({k: 'extraTurn', p}); break;
+    case 'choice': N.queue.unshift({...o.step, p}); break;
+    case 'order': N.queue.unshift(...o.steps.map(s => ({...s}))); break;
+    case 'token': {
+      gainTokenFromDraw(N, p, st.drawn, o.token);
+      break;
+    }
+    case 'race':
+      if (o.lock) { N.stackLocks.push(o.race); log(N, `Shelob locks the ${RACE_NAMES[o.race]} Alliance tokens.`, 'ally'); }
+      else if (st.k === 'anyRaceDraw') drawTokens(N, st, [o.race], 2);
+      else { N.irrev = true; gainToken(N, p, N.stacks[o.race].shift().id); }
+      break;
+    case 'discard': {
+      N.discard.splice(o.di, 1);
+      log(N, `${pname(N, p)} plays ${cardLabel(o.card)} from the discard.`, 'play');
+      N.queue.unshift({k: 'playCard', id: o.card, chained: false, p});
+      break;
+    }
+    case 'chapter': {
+      const idx = N.discard.map((d, i) => d.ch === o.ch ? i : -1).filter(i => i >= 0);
+      const di = idx[Math.floor(rnd(N) * idx.length)], d = N.discard.splice(di, 1)[0];
+      N.irrev = true;
+      log(N, `${pname(N, p)} draws ${cardLabel(d.id)} from the discard and plays it.`, 'play');
+      N.queue.unshift({k: 'playCard', id: d.id, chained: false, p});
+      break;
+    }
+    case 'grey':
+      O.cards = O.cards.filter(id => id !== o.card);
+      if (o.steal) { P.cards.push(o.card); log(N, `${pname(N, p)} takes ${cardLabel(o.card)} from ${pname(N, opp(p))}.`, 'grey'); }
+      else { N.discard.push({id: o.card, hidden: false, ch: CARDS[o.card].ch, seen: [true, true]}); log(N, `${pname(N, p)} discards ${pname(N, opp(p))}'s ${cardLabel(o.card)}.`, 'grey'); }
+      break;
+    case 'shire':
+      N.slots[o.slot].taken = true;
+      log(N, `${pname(N, p)} plays ${cardLabel(o.card)} through The Shire.`, 'play');
+      N.queue.unshift({k: 'playCard', id: o.card, chained: false, p});
+      break;
+    case 'grond': {
+      const r = o.region;
+      N.board[r].f[opp(p)]--; O.forts++;
+      log(N, `Grond breaks the enemy Fortress in ${rname(r)}.`, 'fort');
+      if (N.board[r].u[opp(p)] > 0) {
+        ask(N, {...st, region: r}, 'retreat', `Enemy Units in ${rname(r)} retreat to which adjacent region?`, regionOpts(neighbours(r).map(x => x[0])));
+      } else N.queue.unshift({k: 'grondPlace', region: r, p});
+      break;
+    }
+    case 'retreat': {
+      const r = st.region, n = N.board[r].u[opp(p)];
+      N.board[r].u[opp(p)] = 0; N.board[o.region].u[opp(p)] += n;
+      log(N, `${n} enemy Unit${n > 1 ? 's' : ''} retreat to ${rname(o.region)}.`, 'move');
+      conflict(N, o.region);
+      N.queue.unshift({k: 'grondPlace', region: r, p});
+      break;
+    }
+    case 'faramir': {
+      const s = N.slots[o.slot];
+      s.taken = true;
+      N.discard.push({id: s.id, hidden: false, ch: CARDS[s.id].ch, seen: [true, true]});
+      log(N, `${pname(N, p)} discards ${cardLabel(s.id)} from the central play area.`, 'discard');
+      break;
+    }
+    case 'oppToken':
+      O.tokens = O.tokens.filter(t => t !== o.token);
+      log(N, `${pname(N, p)} discards ${pname(N, opp(p))}'s ${RACE_NAMES[tokenRace(o.token)]} token.`, 'token');
+      break;
+    case 'tile':
+      if (o.lock) { N.tileLocks.push(o.tile); log(N, `The Uruk-Hai Chief locks ${TILES[o.tile].name}.`, 'ally'); }
+      else {
+        N.tilesFace = N.tilesFace.filter(t => t !== o.tile);
+        log(N, `${pname(N, p)} builds ${TILES[o.tile].name} for free.`, 'tile');
+        N.queue.unshift(...tileSteps(N, p, o.tile).map(s => ({...s, p})));
+      }
+      break;
+    case 'edge': {
+      N.blocked.push({e: o.edge, vs: opp(p)});
+      log(N, `The Balrog blocks ${o.label}.`, 'ally');
+      if (st.strike) for (const r of EDGES[o.edge]) if (N.board[r].u[opp(p)] > 0) { N.board[r].u[opp(p)]--; O.units++; log(N, `The Balrog removes an enemy Unit from ${rname(r)}.`, 'remove'); }
+      break;
+    }
+    case 'copy':
+      log(N, `${pname(N, p)} copies ${ALLIES[o.ally].name}'s exit effect.`, 'ally');
+      N.queue.unshift(...ALLIES[o.ally].exit.map(s => ({...s, p})));
+      break;
+    case 'grima':
+      N.forced = {p: opp(p), slot: o.slot, mode: st.mode};
+      log(N, `Gr\u00edma: next turn ${pname(N, opp(p))} must take ${cardLabel(o.card)}${st.mode === 'discard' ? ' and discard it' : ''}.`, 'ally');
+      break;
+  }
+}
+function gainTokenFromDraw(N, p, drawn, keep) {
+  const back = drawn.filter(t => t !== keep);
+  for (let i = back.length - 1; i >= 0; i--) N.stacks[tokenRace(back[i])].unshift({id: back[i], known: true});
+  gainToken(N, p, keep);
+}
+
+function cardLabel(id) {
+  const c = CARDS[id];
+  let e = '';
+  if (c.coins) e = `${c.coins} Coins`;
+  else if (c.quest) e = `${c.quest} Ring${c.quest > 1 ? 's' : ''}`;
+  else if (c.race) e = RACE_NAMES[c.race];
+  else if (c.units) e = `${c.units} Unit${c.units > 1 ? 's' : ''}: ${c.regions.map(rname).join(' / ')}`;
+  else if (c.purple) e = c.purple.map(x => ({rmU: 'remove Unit', lose: '-1 Coin', move: 'move'})[x]).join(', ');
+  else if (c.skills) e = c.skills.map(g => g.map(s => SKILL_NAMES[s]).join('/')).join(' + ');
+  return `${c.color[0].toUpperCase() + c.color.slice(1)} (${e})`;
+}
+
+// ---------- views, results, determinisation ----------
+function result(S) {
+  const rows = [0, 1].map(p => {
+    const P = S.players[p];
+    return {name: pname(S, p), side: SIDES[p], regions: regionCount(S, p), races: distinctRaces(P), quest: P.quest, coins: P.coins,
+      cards: P.cards.length, landmarks: P.landmarks.length, units: REGION_IDS.reduce((n, r) => n + S.board[r].u[p], 0)};
+  });
+  const w = S.winner;
+  rows.forEach((r, p) => { r.rank = !w ? null : w.p === 'tie' ? 1 : w.p === p ? 1 : 2; });
+  return {over: !!w, winner: w ? w.p : null, reason: w ? w.reason : null, reasonText: w ? REASONS[w.reason] : '', rows};
+}
+
+// A copy of S in which everything `viewer` cannot know is re-dealt at random (for AI search).
+function determinize(S, viewer, seed) {
+  const N = structuredClone(S);
+  N.sim = true; N.log = []; N.rng = seed >>> 0;
+  for (const ch of [1, 2, 3]) {
+    const places = [];
+    N.slots.forEach(s => { if (!s.taken && !s.face && CARDS[s.id].ch === ch) places.push(s); });
+    N.discard.forEach(d => { if (d.hidden && !d.seen[viewer] && d.ch === ch) places.push(d); });
+    const pool = shuffle(N, [...places.map(x => x.id), ...N.decks[ch]]);
+    places.forEach((x, i) => { x.id = pool[i]; });
+    N.decks[ch] = pool.slice(places.length);
+  }
+  shuffle(N, N.tilesDeck);
+  for (const r of RACES) {
+    const st = N.stacks[r], idx = st.map((t, i) => t.known ? -1 : i).filter(i => i >= 0);
+    const ids = shuffle(N, idx.map(i => st[i].id));
+    idx.forEach((i, k) => { st[i].id = ids[k]; });
+  }
+  if (N.opts.allies) {
+    const o = opp(viewer), A = N.players[o].allies;
+    const pool = shuffle(N, Object.keys(ALLIES).filter(a => ALLIES[a].side === SIDES[o] && !A.front.includes(a) && !A.gone.includes(a)));
+    A.hand = pool.slice(0, A.hand.length);
+  }
+  return N;
+}
+
+const Engine = {newGame, legalActions, apply, result, determinize, cardCost, tileCost, missingSkills, availableSlots, slotAvailable,
+  distinctRaces, regionCount, present, fortsOnBoard, allyActions, cardLabel, opp, REASONS, forcedSlot, moveOpts, neighbours};
+
+// ===== AI: uses the same engine. Easy = greedy + noise, Normal = 2 plies (deterministic per seed),
+// Hard = several determinisations, 3-ply alpha-beta over whole turns, time-boxed. =====
+const AI = (() => {
+  const E = Engine;
+  let budgetMs = 1200;
+
+  function progress(S) {
+    const taken = S.slots.filter(s => s.taken).length;
+    return Math.min(1, ((S.chapter - 1) * 20 + taken) / 60);
+  }
+  function parts(S, p) {
+    const P = S.players[p];
+    const q = Math.max(0, P.quest - 0.6 * S.questBlock[p]) / QUEST_LEN;
+    const r = E.distinctRaces(P) / 6;
+    const g = E.regionCount(S, p) / 7;
+    return {
+      quest: 3 * q * q + 8 * Math.max(0, q - 0.75) ** 2,
+      races: 2.6 * r * r + 6 * Math.max(0, r - 0.66) ** 2,
+      regions: 2.2 * g * g + 6 * Math.max(0, g - 0.7) ** 2,
+    };
+  }
+  function evalSide(S, p) {
+    const P = S.players[p], pr = progress(S), pt = parts(S, p);
+    let v = pt.quest + pt.races + pt.regions;
+    v += 0.04 * Math.min(P.coins, 10) + 0.01 * Math.max(0, P.coins - 10);
+    let skills = 0;
+    for (const id of P.cards) { const c = CARDS[id]; if (c.skills) for (const g of c.skills) skills += g.length > 1 ? 0.7 : 1; }
+    v += 0.05 * skills * (1 - 0.6 * pr);
+    const takenIds = new Set([...S.players[0].cards, ...S.players[1].cards]);
+    for (const id of P.cards) {
+      const out = CARDS[id].chainOut;
+      if (out && pr < 0.95) { const tgt = CARD_IDS.find(x => CARDS[x].chainIn === out); if (tgt && !takenIds.has(tgt)) v += 0.03; }
+    }
+    v += 0.06 * P.tokens.length + 0.04 * P.power + 0.05 * P.allies.hand.length + 0.04 * P.allies.front.length;
+    for (const r of REGION_IDS) {
+      const b = S.board[r];
+      if (b.f[p]) v += 0.04;
+      if (b.u[p] > 1) v += 0.015 * Math.min(3, b.u[p] - 1);
+    }
+    if (S.active === p) v += 0.15 * S.extra;
+    return v;
+  }
+  function evaluate(S, p) {
+    if (S.winner) return S.winner.p === 'tie' ? 0 : S.winner.p === p ? 1000 : -1000;
+    const pr = progress(S);
+    const lead = (E.regionCount(S, p) - E.regionCount(S, opp(p))) / 7;
+    return evalSide(S, p) - evalSide(S, opp(p)) + 1.5 * pr * pr * lead;
+  }
+
+  // ---- simulation helpers ----
+  function greedyIndex(S, p, noise) {
+    const n = S.pending.opts.length;
+    let best = 0, bv = -Infinity;
+    for (let i = 0; i < n; i++) {
+      const v = evaluate(E.apply(S, {t: 'choose', i}), p) + (noise ? noise() : 0);
+      if (v > bv) { bv = v; best = i; }
+    }
+    return best;
+  }
+  function resolve(S, p, noise) {
+    let guard = 0;
+    while (!S.winner && S.pending && S.pending.p === p && guard++ < 60) S = E.apply(S, {t: 'choose', i: greedyIndex(S, p, noise)});
+    return S;
+  }
+  // Apply a whole turn-step for p: the action plus greedy sub-decisions; end the turn unless p keeps the move.
+  function macro(S, a, p, noise) {
+    let N = resolve(E.apply(S, a), p, noise);
+    if (!N.winner && !N.pending && N.active === p && N.mainDone) N = E.apply(N, {t: 'end'});
+    return N;
+  }
+  function ordered(S, p, beam, noise) {
+    const mover = S.active;
+    const acts = E.legalActions(S).map(a => {
+      const N = macro(S, a, mover, noise);
+      return {a, N, v: evaluate(N, mover)};
+    });
+    acts.sort((x, y) => y.v - x.v);
+    return beam ? acts.slice(0, beam) : acts;
+  }
+  function search(S, root, depth, alpha, beta, deadline, beam) {
+    if (S.winner || depth === 0 || performance.now() > deadline) return evaluate(S, root);
+    if (S.pending) S = resolve(S, S.pending.p);
+    if (S.winner) return evaluate(S, root);
+    const kids = ordered(S, root, beam);
+    if (!kids.length) return evaluate(S, root);
+    const maxi = S.active === root;
+    let best = maxi ? -Infinity : Infinity;
+    for (const k of kids) {
+      const v = depth === 1 ? evaluate(k.N, root) : search(k.N, root, depth - 1, alpha, beta, deadline, beam);
+      if (maxi) { best = Math.max(best, v); alpha = Math.max(alpha, v); } else { best = Math.min(best, v); beta = Math.min(beta, v); }
+      if (beta <= alpha) break;
+    }
+    return best;
+  }
+
+  function seedFor(S, k = 0) { return (S.seed ^ Math.imul(S.turnNo + 17, 2654435761) ^ Math.imul(k + 1, 40503) ^ S.log.length) >>> 0; }
+  function noiseFn(S, amp) {
+    const st = {rng: seedFor(S, 99)};
+    return () => (rndOf(st) - 0.5) * 2 * amp;
+  }
+  function rndOf(st) {
+    let t = (st.rng = (st.rng + 0x6D2B79F5) >>> 0);
+    t = Math.imul(t ^ (t >>> 15), t | 1); t ^= t + Math.imul(t ^ (t >>> 7), t | 61);
+    return ((t ^ (t >>> 14)) >>> 0) / 4294967296;
+  }
+
+  // ---- decisions ----
+  function decide(S, level = 'normal', opts = {}) {
+    const p = S.pending ? S.pending.p : S.active;
+    const acts = E.legalActions(S);
+    if (acts.length <= 1) return acts[0];
+    const t0 = performance.now(), budget = opts.budget ?? budgetMs;
+    if (level === 'easy') {
+      const D = E.determinize(S, p, seedFor(S)), noise = noiseFn(S, 0.35);
+      return pickMax(acts, a => S.pending ? evaluate(E.apply(D, a), p) + noise() : evaluate(macro(D, a, p, noise), p) + noise());
+    }
+    if (level === 'normal') {
+      const D = E.determinize(S, p, seedFor(S));
+      return pickMax(acts, a => twoPly(D, a, p));
+    }
+    // hard: average over determinisations, deepen while time allows
+    const deadline = t0 + budget, K = 3, totals = new Array(acts.length).fill(0);
+    let rounds = 0;
+    for (let k = 0; k < K && performance.now() < deadline; k++) {
+      const D = E.determinize(S, p, seedFor(S, k));
+      const vals = acts.map(a => twoPly(D, a, p));
+      acts.forEach((_, i) => { totals[i] += vals[i]; });
+      rounds++;
+    }
+    let order = acts.map((a, i) => ({a, i, v: totals[i] / rounds})).sort((x, y) => y.v - x.v);
+    const top = order.slice(0, 6);
+    if (performance.now() < deadline - 50) {
+      const deep = top.map(x => ({...x, d: 0, n: 0}));
+      for (let k = 0; k < K && performance.now() < deadline; k++) {
+        const D = E.determinize(S, p, seedFor(S, k + 7));
+        for (const x of deep) {
+          if (performance.now() > deadline) break;
+          let N = S.pending ? resolve(E.apply(D, x.a), p) : macro(D, x.a, p);
+          x.d += search(N, p, 2, -Infinity, Infinity, deadline, 5); x.n++;
+        }
+      }
+      for (const x of deep) if (x.n) x.v = 0.4 * x.v + 0.6 * (x.d / x.n);
+      deep.sort((x, y) => y.v - x.v);
+      return deep[0].a;
+    }
+    return order[0].a;
+  }
+  function twoPly(D, a, p) {
+    let N = D.pending ? resolve(E.apply(D, a), p) : macro(D, a, p);
+    if (N.winner || N.active === p) return evaluate(N, p);
+    const o = N.active;
+    let worst = Infinity;
+    for (const b of E.legalActions(N)) {
+      const M = macro(N, b, o);
+      worst = Math.min(worst, evaluate(M, p));
+      if (worst <= -1000) break;
+    }
+    return worst === Infinity ? evaluate(N, p) : worst;
+  }
+  function pickMax(acts, f) {
+    let best = acts[0], bv = -Infinity;
+    for (const a of acts) { const v = f(a); if (v > bv) { bv = v; best = a; } }
+    return best;
+  }
+
+  // ---- rival intel: non-invasive hints about the opponent of `viewer` ----
+  function intel(S, viewer) {
+    const o = opp(viewer), P = S.players[o], name = (S.seats[o] && S.seats[o].name) || SIDE_NAMES[SIDES[o]];
+    const out = [];
+    const left = QUEST_LEN - P.quest;
+    out.push(o === 0 ? `Frodo and Sam are ${left} space${left === 1 ? '' : 's'} from Mount Doom.` : `The Nazg\u00fbl are ${left} space${left === 1 ? '' : 's'} from catching Frodo and Sam.`);
+    const have = new Set(greens(P));
+    const missing = RACES.filter(r => !have.has(r)).map(r => RACE_NAMES[r]);
+    out.push(`${name} has ${E.distinctRaces(P)} of 6 Race symbols${missing.length && missing.length < 6 ? ` (missing ${missing.join(', ')}${hasHook(P, 'eagle') ? '; has the Eagle' : ''})` : ''}.`);
+    const absent = REGION_IDS.filter(r => !E.present(S, o, r)).map(rname);
+    out.push(`${name} is present in ${7 - absent.length} of 7 regions${absent.length && absent.length < 4 ? ` (not in ${absent.join(', ')})` : ''}.`);
+    const avail = E.availableSlots(S);
+    const afford = avail.filter(i => E.cardCost(S, o, S.slots[i].id).coins <= P.coins).length;
+    out.push(`${name} has ${P.coins} Coin${P.coins === 1 ? '' : 's'} and could play ${afford} of the ${avail.length} available cards.`);
+    const pt = parts(S, o);
+    const top = Object.entries(pt).sort((a, b) => b[1] - a[1])[0][0];
+    out.push(`Main threat: ${{quest: 'the Quest of the Ring', races: 'Support of the Races', regions: 'Conquest of Middle-earth'}[top]}.`);
+    if (S.opts.allies) out.push(`${name} has ${P.power} Power token${P.power === 1 ? '' : 's'} and ${P.allies.hand.length} hidden Ally card${P.allies.hand.length === 1 ? '' : 's'}.`);
+    return out;
+  }
+
+  return {decide, evaluate, intel, parts, setBudget: ms => { budgetMs = ms; }};
+})();
+
+// ===== ?test rule tests and ?selfplay harness. Pure: no DOM. =====
+const Tests = (() => {
+  const E = Engine;
+  const T = [];
+  const test = (name, fn) => T.push({name, fn});
+  function eq(a, b, msg) { if (JSON.stringify(a) !== JSON.stringify(b)) throw new Error(`${msg || 'expected'}: ${JSON.stringify(b)}, got ${JSON.stringify(a)}`); }
+  function ok(c, msg) { if (!c) throw new Error(msg || 'assertion failed'); }
+
+  // ---- fixtures ----
+  function fresh(o = {}) {
+    const S = E.newGame({seed: o.seed ?? 12345, fan: o.fan ?? false, allies: o.allies ?? false,
+      seats: [{name: 'Fellowship', type: 'ai', level: 'easy'}, {name: 'Sauron', type: 'ai', level: 'easy'}]});
+    S.sim = false;
+    if (o.active !== undefined) S.active = o.active;
+    return S;
+  }
+  function slotFor(S) { return E.availableSlots(S)[0]; }
+  function place(S, id) { const i = slotFor(S); S.slots[i].id = id; S.slots[i].face = true; return i; }
+  function play(S, id, mode = 'play') {
+    const i = place(S, id);
+    const a = E.legalActions(S).find(x => x.t === 'take' && x.slot === i && x.mode === mode);
+    ok(a, `no ${mode} action for ${id}`);
+    return E.apply(S, a);
+  }
+  function give(S, p, ids) { for (const id of ids) S.players[p].cards.push(id); return S; }
+  function pick(S, pred, msg) {
+    ok(S.pending, `no pending decision (${msg || ''})`);
+    const i = S.pending.opts.findIndex(pred);
+    ok(i >= 0, `option not found (${msg || S.pending.type})`);
+    return E.apply(S, {t: 'choose', i});
+  }
+  const hasSkip = S => S.pending && S.pending.opts.some(o => o.skip);
+  const stackTop = (S, race, ids) => { S.stacks[race] = ids.map(id => ({id, known: true})); };
+
+  // ---- setup ----
+  test('setup: Sauron starts, 3/2 coins, 2 Units each, 20 cards and 3 hidden discards', () => {
+    const S = fresh();
+    eq(S.active, 1, 'active'); eq(S.players[0].coins, 3); eq(S.players[1].coins, 2);
+    eq(S.board.arnor.u[0], 2); eq(S.board.mordor.u[1], 2);
+    eq(S.slots.length, 20); eq(S.discard.filter(d => d.hidden).length, 3);
+    eq(S.tilesFace.length, 3); eq(E.availableSlots(S).length, 6, 'bottom row available');
+  });
+  test('setup: fan tiles join the Landmark deck only when on', () => {
+    const a = fresh({fan: true}), b = fresh({fan: false});
+    ok([...a.tilesFace, ...a.tilesDeck].includes('shire') && [...a.tilesFace, ...a.tilesDeck].includes('grond'));
+    ok(![...b.tilesFace, ...b.tilesDeck].includes('shire'));
+    eq(a.tilesFace.length + a.tilesDeck.length, 9); eq(b.tilesFace.length + b.tilesDeck.length, 7);
+  });
+  test('layout: chapter 3 has 20 cards, 7 rows, and covering works', () => {
+    const S = fresh();
+    S.slots.forEach(s => { s.taken = true; });
+    const N = E.apply(S, {t: 'end'}) && null;
+    let X = fresh(); X.slots.forEach(s => { s.taken = true; }); X.slots[0].taken = false;
+    X = E.apply(X, {t: 'take', slot: 0, mode: 'discard'});
+    eq(X.chapter, 2, 'chapter 2 after last card');
+    X.slots.forEach(s => { s.taken = true; }); X.slots[0].taken = false; X.active = 0; X.mainDone = false;
+    X = E.apply(X, {t: 'take', slot: 0, mode: 'discard'});
+    eq(X.chapter, 3); eq(X.slots.length, 20); eq(new Set(X.slots.map(s => s.r)).size, 7);
+    eq(E.availableSlots(X).length, 2, 'only the bottom row of 2');
+    ok(N === null);
+  });
+  test('reveal: taking cards uncovers and turns facedown cards face up', () => {
+    let S = fresh();
+    const row3 = S.slots.filter(s => s.r === 3);
+    ok(row3.every(s => !s.face));
+    const left = S.slots.findIndex(s => s.r === 4 && s.i === 0), next = S.slots.findIndex(s => s.r === 4 && s.i === 1);
+    S = E.apply(S, {t: 'take', slot: left, mode: 'discard'});
+    S.active = 1; S.mainDone = false;
+    S = E.apply(S, {t: 'take', slot: next, mode: 'discard'});
+    const r3 = S.slots.findIndex(s => s.r === 3 && s.i === 0);
+    ok(E.slotAvailable(S, r3) && S.slots[r3].face, 'uncovered card revealed');
+  });
+
+  // ---- coins and costs ----
+  test('discard gives Coins equal to the chapter; Humans token doubles it', () => {
+    let S = fresh(); S = play(S, 'C1-04', 'discard'); eq(S.players[1].coins, 3);
+    let H = fresh(); H.players[1].tokens.push('humans-discard'); H = play(H, 'C1-04', 'discard'); eq(H.players[1].coins, 4);
+  });
+  test('missing skills are paid with Coins; chained cards are free', () => {
+    const S = fresh();
+    eq(E.cardCost(S, 1, 'C2-02').coins, 3, 'Ru Ru Kn missing');
+    give(S, 1, ['C1-08', 'C1-21']);
+    eq(E.cardCost(S, 1, 'C2-02').coins, 1);
+    give(S, 1, ['C1-11']);
+    const c = E.cardCost(S, 1, 'C2-02'); ok(c.chain && c.coins === 0, 'sword chain');
+  });
+  test('choice skill cards provide one of their skills', () => {
+    const S = fresh(); give(S, 0, ['C2-19']);
+    eq(E.missingSkills(S.players[0], ['Co']), 0); eq(E.missingSkills(S.players[0], ['Co', 'St']), 1);
+  });
+  test('Elves wild-skill token covers one missing skill', () => {
+    const S = fresh(); S.players[0].tokens.push('elves-skill');
+    eq(E.missingSkills(S.players[0], ['Ru', 'Ru']), 1);
+  });
+  test('Landmark cost: missing skills plus 1 Coin per own Fortress; Dwarves token waives the fee', () => {
+    const S = fresh(); S.board.rohan.f[1] = 1; S.board.gondor.f[1] = 1;
+    const t = S.tilesFace[0], c = E.tileCost(S, 1, t);
+    eq(c.fee, 2); eq(c.coins, 2 + 6);
+    S.players[1].tokens.push('dwarves-nofee'); eq(E.tileCost(S, 1, t).fee, 0);
+  });
+  test('chains work across any earlier chapter', () => {
+    const S = fresh(); give(S, 0, ['C1-07']);
+    ok(E.cardCost(S, 0, 'C3-03').chain, 'fish C1-07 -> C3-03');
+  });
+
+  // ---- units, conflict, movement ----
+  test('red card placement is mandatory (no Skip) and conflicts resolve 1 for 1', () => {
+    let S = fresh(); S.board.rohan.u[0] = 1;
+    S = play(S, 'C1-13');
+    eq(S.pending.type, 'region'); ok(!hasSkip(S), 'no skip');
+    S = pick(S, o => o.region === 'rohan');
+    eq(S.board.rohan.u, [0, 0], 'conflict');
+    eq(S.players[0].units, 14); eq(S.players[1].units, 13);
+  });
+  test('15-Unit cap: extra Units are lost', () => {
+    let S = fresh(); S.players[1].units = 1; S.players[1].coins = 20;
+    S = play(S, 'C2-12'); S = pick(S, o => o.region === 'gondor');
+    eq(S.board.gondor.u[1], 1); eq(S.players[1].units, 0);
+  });
+  test('movements are skippable; purple remove Unit is skippable', () => {
+    let S = fresh(); S.board.rohan.u[0] = 1; S.players[1].coins = 20;
+    S = play(S, 'C3-06');
+    eq(S.pending.type, 'remove'); ok(hasSkip(S));
+    S = pick(S, o => o.skip);
+    eq(S.pending.type, 'move'); ok(hasSkip(S));
+  });
+
+  // ---- quest ----
+  test('quest bonuses at 3/6/9/12: coin automatic, unit/turn/fortress optional', () => {
+    let S = fresh({active: 0}); S.players[0].quest = 2; S.players[0].coins = 10;
+    S = play(S, 'C1-06'); eq(S.players[0].quest, 3); eq(S.players[0].coins, 11, 'coin bonus');
+    S = fresh({active: 0}); S.players[0].quest = 5;
+    S = play(S, 'C1-06'); eq(S.pending.type, 'region'); ok(hasSkip(S), 'unit optional');
+    S = fresh({active: 0}); S.players[0].quest = 8;
+    S = play(S, 'C1-06'); eq(S.pending.type, 'turn'); S = pick(S, o => o.yes); eq(S.active, 0, 'extra turn taken'); 
+    S = fresh({active: 0}); S.players[0].quest = 11; S.board.mordor.f[1] = 1; S.players[1].forts--;
+    S = play(S, 'C1-06'); eq(S.pending.type, 'removeFort'); ok(hasSkip(S));
+    S = pick(S, o => o.region === 'mordor'); eq(S.board.mordor.f[1], 0);
+  });
+  test('quest win at 14 is immediate', () => {
+    let S = fresh({active: 0}); S.players[0].quest = 13;
+    S = play(S, 'C1-06'); eq(S.winner, {p: 0, reason: 'quest'});
+  });
+  test('Sauron quest bonuses are his own; Frodo never drags the Nazgul', () => {
+    let S = fresh({active: 1}); S.players[1].quest = 2; const c = S.players[1].coins;
+    S = play(S, 'C1-06'); eq(S.players[1].coins, c + 1); eq(S.players[0].quest, 0);
+  });
+
+  // ---- turns ----
+  test('extra turns stack', () => {
+    let S = fresh({active: 0});
+    S.players[0].tokens.push('elves-yellow');
+    S.queue.push({k: 'extraTurn', p: 0});
+    S = play(S, 'C1-02');
+    eq(S.active, 0, 'after first'); eq(S.extra, 1, 'one more banked');
+    S = play(S, 'C1-03', 'discard'); eq(S.active, 0, 'second extra');
+    S = play(S, 'C1-18', 'discard'); eq(S.active, 1, 'back to Sauron');
+  });
+
+  // ---- alliances ----
+  test('pair of a Race draws 2 keep 1, once per Race; returned token goes back on top', () => {
+    let S = fresh({active: 0}); S.players[0].coins = 20; give(S, 0, ['C1-16']);
+    stackTop(S, 'elves', ['elves-red', 'elves-yellow', 'elves-skill']);
+    S = play(S, 'C2-14');
+    eq(S.pending.type, 'token');
+    S = pick(S, o => o.token === 'elves-yellow');
+    ok(S.players[0].tokens.includes('elves-yellow'));
+    eq(S.stacks.elves.map(t => t.id), ['elves-red', 'elves-skill']); ok(S.stacks.elves[0].known);
+    S.active = 0; S.mainDone = false; S.slots[0].taken = false;
+    eq(S.players[0].pairs.elves, true);
+  });
+  test('three different Races draw 1 of each, once per game; Eagle does not count for it', () => {
+    let S = fresh({active: 0}); S.players[0].coins = 20; S.players[0].tokens.push('hobbits-eagle');
+    give(S, 0, ['C1-05']);
+    S = play(S, 'C1-12');
+    ok(!S.pending, 'two races + eagle does not trigger');
+    S.active = 0; S.mainDone = false;
+    S = play(S, 'C1-16');
+    eq(S.pending.type, 'token'); eq(S.pending.opts.length, 3); ok(S.players[0].threeUsed);
+  });
+  test('pair and three-races together: the player chooses the order', () => {
+    let S = fresh({active: 0}); S.players[0].coins = 20; give(S, 0, ['C1-16', 'C1-05', 'C1-12']);
+    S = play(S, 'C2-14');
+    eq(S.pending.type, 'order'); eq(S.pending.opts.length, 2);
+  });
+  test('a short stack gives whatever is left', () => {
+    let S = fresh({active: 0}); S.players[0].coins = 20; give(S, 0, ['C1-16']);
+    stackTop(S, 'elves', ['elves-red']);
+    S = play(S, 'C2-14');
+    ok(S.players[0].tokens.includes('elves-red'), 'single token kept directly'); eq(S.stacks.elves.length, 0);
+  });
+  test('Eagle counts as a 6th Race for Support of the Races', () => {
+    let S = fresh({active: 0}); S.players[0].coins = 50; S.players[0].tokens.push('hobbits-eagle');
+    S.players[0].pairs = {elves: 1, dwarves: 1, hobbits: 1, humans: 1}; S.players[0].threeUsed = true;
+    give(S, 0, ['C1-16', 'C1-05', 'C1-15', 'C1-12']);
+    S = play(S, 'C3-05');
+    eq(S.winner, {p: 0, reason: 'races'});
+  });
+  test('token effects only apply to future plays', () => {
+    let S = fresh({active: 0}); S.players[0].coins = 20; give(S, 0, ['C1-05']);
+    stackTop(S, 'dwarves', ['dwarves-move', 'dwarves-turn', 'dwarves-nofee']);
+    S = play(S, 'C2-05');
+    S = pick(S, o => o.token === 'dwarves-move');
+    ok(!S.pending || S.pending.type !== 'move', 'no movement from the card that granted the token');
+  });
+  test('instant tokens: Wizards 2 Quest spaces resolves at once', () => {
+    let S = fresh({active: 0}); S.players[0].coins = 30; give(S, 0, ['C3-19']);
+    stackTop(S, 'wizards', ['wizards-quest', 'wizards-units', 'wizards-discard']);
+    S = play(S, 'C3-05');
+    S = pick(S, o => o.token === 'wizards-quest');
+    eq(S.players[0].quest, 2);
+  });
+
+  // ---- landmarks ----
+  test('Landmark places a Fortress in its region; Isengard discards an enemy Grey card into the discard', () => {
+    let S = fresh({active: 1}); S.tilesFace = ['isengard', 'bree', 'helms']; S.players[1].coins = 30; give(S, 0, ['C1-04']);
+    S = E.apply(S, {t: 'tile', tile: 'isengard'});
+    eq(S.board.enedwaith.f[1], 1);
+    S = pick(S, o => o.card === 'C1-04');
+    ok(!S.players[0].cards.includes('C1-04')); ok(S.discard.some(d => d.id === 'C1-04' && !d.hidden));
+    eq(S.players[1].quest, 1);
+  });
+  test('Barad-Dur plays a hidden discard card, which acts normally', () => {
+    let S = fresh({active: 1}); S.tilesFace = ['baraddur', 'bree', 'helms']; S.players[1].coins = 30;
+    S.discard[0].id = 'C1-02';
+    S = E.apply(S, {t: 'tile', tile: 'baraddur'});
+    const c = S.players[1].coins;
+    S = pick(S, o => o.card === 'C1-02');
+    eq(S.players[1].coins, c + 2); ok(S.players[1].cards.includes('C1-02'));
+  });
+  test('the discard accumulates across chapters', () => {
+    let S = fresh(); S.slots.forEach(s => { s.taken = true; }); S.slots[0].taken = false;
+    S = E.apply(S, {t: 'take', slot: 0, mode: 'discard'});
+    eq(S.discard.filter(d => d.hidden).length, 6); eq(S.discard.length, 7);
+  });
+  test('Landmark row refills to 3 at each new chapter', () => {
+    let S = fresh(); S.tilesFace = [S.tilesFace[0]];
+    S.slots.forEach(s => { s.taken = true; }); S.slots[0].taken = false;
+    S = E.apply(S, {t: 'take', slot: 0, mode: 'discard'});
+    eq(S.tilesFace.length, 3);
+  });
+  test('Grond: needs an enemy Fortress; enemy Units retreat where the Grond player chooses; then Fortress + Unit', () => {
+    let S = fresh({fan: true, active: 1}); S.tilesFace = ['grond', 'bree', 'helms']; S.players[1].coins = 30;
+    ok(!E.legalActions(S).some(a => a.tile === 'grond'), 'no enemy fortress yet');
+    S.board.rohan.f[0] = 1; S.board.rohan.u[0] = 2; S.players[0].forts--;
+    S = E.apply(S, {t: 'tile', tile: 'grond'});
+    S = pick(S, o => o.region === 'rohan');
+    eq(S.pending.type, 'retreat');
+    S = pick(S, o => o.region === 'gondor');
+    eq(S.board.gondor.u[0], 2); eq(S.board.rohan.u, [0, 1]); eq(S.board.rohan.f, [0, 1]);
+  });
+  test('The Shire: faceup cards only (even covered), pays the Fortress surcharge, places no Fortress', () => {
+    let S = fresh({fan: true, active: 0}); S.tilesFace = ['shire', 'bree', 'helms']; S.players[0].coins = 30;
+    S.board.lindon.f[0] = 1; S.players[0].forts--;
+    eq(E.tileCost(S, 0, 'shire').fee, 1);
+    const forts = S.players[0].forts;
+    S = E.apply(S, {t: 'tile', tile: 'shire'});
+    ok(S.pending.opts.every(o => S.slots[o.slot].face), 'faceup only');
+    ok(S.pending.opts.some(o => !E.slotAvailable(S, o.slot)), 'covered cards allowed');
+    const top = S.pending.opts.find(o => S.slots[o.slot].r === 0);
+    S = pick(S, o => o === S.pending.opts.find(x => x.slot === top.slot));
+    eq(S.players[0].forts, forts, 'no fortress');
+  });
+
+  // ---- wins ----
+  test('win check after every step: Conquest mid-effect ends the game', () => {
+    let S = fresh({active: 1});
+    for (const r of REGION_IDS) if (r !== 'rohan') S.board[r].u[1] = 1;
+    S.board.arnor.u[0] = 0;
+    S = play(S, 'C1-13'); S = pick(S, o => o.region === 'rohan');
+    eq(S.winner, {p: 1, reason: 'conquest'}); ok(!S.pending);
+  });
+  test('end of chapter 3: most regions wins, equal is shared', () => {
+    let S = fresh(); S.chapter = 3; S.slots.forEach(s => { s.taken = true; }); S.slots[0].taken = false;
+    S.board.rohan.u[1] = 1;
+    S = E.apply(S, {t: 'take', slot: 0, mode: 'discard'}); eq(S.winner, {p: 1, reason: 'regions'});
+    let X = fresh(); X.chapter = 3; X.slots.forEach(s => { s.taken = true; }); X.slots[0].taken = false;
+    X = E.apply(X, {t: 'take', slot: 0, mode: 'discard'}); eq(X.winner.p, 'tie');
+  });
+
+  // ---- hidden information ----
+  test('determinize keeps what the viewer knows and re-deals the rest', () => {
+    const S = fresh();
+    const D = E.determinize(S, 0, 999);
+    S.slots.forEach((s, i) => { if (s.face) eq(D.slots[i].id, s.id, 'faceup kept'); });
+    const hid = S.slots.filter(s => !s.face).map(s => s.id).join(), dh = D.slots.filter(s => !s.face).map(s => s.id).join();
+    ok(hid !== dh, 'facedown re-dealt');
+    const all = [...D.slots.map(s => s.id), ...D.discard.map(d => d.id), ...D.decks[2], ...D.decks[3]];
+    eq(new Set(all).size, 69, 'no duplicates');
+  });
+  test('legal actions apply without throwing from a fresh game', () => {
+    const S = fresh({fan: true, allies: true});
+    for (const a of E.legalActions(S)) E.apply(S, a);
+  });
+
+  // ---- allies ----
+  test('allies: 3 hidden Allies and 1 Power each; enter costs 1, exit 2, once per turn', () => {
+    let S = fresh({allies: true, active: 0});
+    eq(S.players[0].allies.hand.length, 3); eq(S.players[0].power, 1);
+    S.players[0].allies.hand = ['goldberry', 'tom', 'boromir'];
+    const c = S.players[0].coins;
+    S = E.apply(S, {t: 'ally', a: 'goldberry', mode: 'enter'});
+    eq(S.players[0].coins, c + 3); eq(S.players[0].power, 0);
+    eq(E.allyActions(S, 0).length, 0, 'once per turn');
+  });
+  test('allies: Power tokens on facedown slots go to whoever reveals them', () => {
+    const S = fresh({allies: true});
+    eq(S.slots.filter(s => s.power).length, 2);
+    ok(S.slots.filter(s => s.power).every(s => !s.face));
+  });
+  test('allies: Tom blocks the Nazgul; a Ring removes the Power token instead of moving', () => {
+    let S = fresh({allies: true, active: 0}); S.players[0].allies.hand = ['tom', 'goldberry', 'boromir'];
+    S = E.apply(S, {t: 'ally', a: 'tom', mode: 'enter'}); eq(S.questBlock[1], 1);
+    S = play(S, 'C1-06'); S.active = 1; S.mainDone = false; S.allyUsed = false;
+    S = play(S, 'C1-06'); eq(S.players[1].quest, 0); eq(S.questBlock[1], 0);
+  });
+  test('allies: Warg copying Tom puts the Power tokens on Frodo (mirrored)', () => {
+    let S = fresh({allies: true, active: 1}); S.players[1].power = 2; S.players[1].allies.hand = ['warg', 'shelob', 'uruk'];
+    S.players[1].allies.front = ['warg']; S.players[1].allies.hand = ['shelob', 'uruk'];
+    S.players[0].allies.front = ['tom'];
+    S = E.apply(S, {t: 'ally', a: 'warg', mode: 'exit'});
+    S = pick(S, o => o.ally === 'tom');
+    eq(S.questBlock[0], 2);
+  });
+  test('allies: Shelob lock stops the Fellowship drawing that Race', () => {
+    let S = fresh({allies: true, active: 1}); S.players[1].allies.hand = ['shelob', 'uruk', 'warg'];
+    S = E.apply(S, {t: 'ally', a: 'shelob', mode: 'enter'}); S = pick(S, o => o.race === 'elves');
+    S.active = 0; S.mainDone = false; S.allyUsed = false; S.players[0].coins = 20; give(S, 0, ['C1-16']);
+    S = play(S, 'C2-14');
+    eq(S.players[0].tokens.length, 0); eq(S.stacks.elves.length, 3);
+  });
+  test('allies: Uruk-Hai lock stops the Fellowship building that Landmark', () => {
+    let S = fresh({allies: true, active: 1}); S.players[1].allies.hand = ['uruk', 'shelob', 'warg'];
+    const t = S.tilesFace[0];
+    S = E.apply(S, {t: 'ally', a: 'uruk', mode: 'enter'}); S = pick(S, o => o.tile === t);
+    S.active = 0; S.mainDone = false; S.players[0].coins = 50;
+    ok(!E.legalActions(S).some(a => a.tile === t));
+  });
+  test('allies: Grima forces the next card taken by the Fellowship', () => {
+    let S = fresh({allies: true, active: 1}); S.players[1].allies.hand = ['grima', 'shelob', 'warg'];
+    S = E.apply(S, {t: 'ally', a: 'grima', mode: 'enter'});
+    const slot = S.pending.opts[2].slot;
+    S = pick(S, o => o.slot === slot);
+    S = play(S, 'C1-04', 'discard');
+    eq(S.active, 0);
+    ok(E.legalActions(S).filter(a => a.t === 'take' || a.t === 'tile').every(a => a.slot === slot));
+  });
+  test('allies: Balrog blocks a connection for enemy movement only', () => {
+    let S = fresh({allies: true, active: 1}); S.players[1].allies.hand = ['balrog', 'shelob', 'warg'];
+    S = E.apply(S, {t: 'ally', a: 'balrog', mode: 'enter'}); S = pick(S, o => o.edge === 0);
+    ok(!E.moveOpts(S, 0).some(m => m.from === 'arnor' && m.to === 'lindon'));
+    S.board.arnor.u[1] = 1;
+    ok(E.moveOpts(S, 1).some(m => m.from === 'arnor' && m.to === 'lindon'));
+  });
+
+  // ---- meta ----
+  test('changelog newest first and matches APP_VERSION', () => {
+    eq(CHANGELOG[0].v, APP_VERSION);
+    const cmp = (a, b) => { const [x, y] = [a, b].map(v => v.split('.').map(Number)); return x[0] - y[0] || (x[1] || 0) - (y[1] || 0); };
+    ok(cmp('0.10', '0.9') > 0, 'numeric compare');
+    for (let i = 1; i < CHANGELOG.length; i++) ok(cmp(CHANGELOG[i - 1].v, CHANGELOG[i].v) > 0, `changelog order at ${CHANGELOG[i].v}`);
+  });
+  test('data: 69 cards, 23 per chapter, 18 tokens, 14 Allies, chain pairs match', () => {
+    eq(CARD_IDS.length, 69); for (const ch of [1, 2, 3]) eq(CARD_IDS.filter(id => CARDS[id].ch === ch).length, 23);
+    eq(Object.keys(TOKENS).length, 18); eq(Object.keys(ALLIES).length, 14);
+    for (const id of CARD_IDS) { const o = CARDS[id].chainOut; if (o) eq(CARD_IDS.filter(x => CARDS[x].chainIn === o).length, 1, `chain ${o}`); }
+  });
+
+  function run() {
+    const res = [];
+    for (const t of T) {
+      try { t.fn(); res.push({name: t.name, ok: true}); }
+      catch (e) { res.push({name: t.name, ok: false, err: String(e && e.stack || e)}); }
+    }
+    return {pass: res.filter(r => r.ok).length, total: res.length, res};
+  }
+
+  // ---- self-play ----
+  function invariants(S) {
+    for (const p of [0, 1]) {
+      const P = S.players[p];
+      const u = REGION_IDS.reduce((n, r) => n + S.board[r].u[p], 0), f = REGION_IDS.reduce((n, r) => n + S.board[r].f[p], 0);
+      if (u + P.units !== UNITS_PER_SIDE) throw new Error(`unit count p${p}: ${u}+${P.units}`);
+      if (f + P.forts !== FORTS_PER_SIDE) throw new Error(`fort count p${p}`);
+      if (P.coins < 0) throw new Error('negative coins');
+      if (REGION_IDS.some(r => S.board[r].u[0] > 0 && S.board[r].u[1] > 0)) throw new Error('unresolved conflict');
+    }
+  }
+  function selfplayGame(o) {
+    const levels = o.levels || ['normal', 'normal'];
+    let S = E.newGame({seed: o.seed, fan: o.fan !== false, allies: !!o.allies,
+      seats: levels.map((l, p) => ({name: SIDE_NAMES[SIDES[p]], type: 'ai', level: l}))});
+    let steps = 0;
+    while (!S.winner) {
+      if (++steps > 3000) throw new Error('stalled');
+      const p = S.pending ? S.pending.p : S.active;
+      const acts = E.legalActions(S);
+      if (!acts.length) throw new Error('no legal actions');
+      const a = AI.decide(S, levels[p], {budget: o.budget});
+      if (!acts.some(x => JSON.stringify(x) === JSON.stringify(a))) throw new Error('AI chose an illegal action ' + JSON.stringify(a));
+      S = E.apply(S, a);
+      invariants(S);
+    }
+    return {S, steps};
+  }
+  function selfplay(o = {}) {
+    const n = o.n || 1, out = {games: 0, wins: {fellowship: 0, sauron: 0, tie: 0}, reasons: {}, steps: 0, errors: []};
+    for (let g = 0; g < n; g++) {
+      const seed = (o.seed ?? 1000) + g;
+      try {
+        const {S, steps} = selfplayGame({...o, seed});
+        out.games++; out.steps += steps;
+        const w = S.winner.p === 'tie' ? 'tie' : SIDES[S.winner.p];
+        out.wins[w]++; out.reasons[S.winner.reason] = (out.reasons[S.winner.reason] || 0) + 1;
+        out.last = S;
+      } catch (e) { out.errors.push(`seed ${seed}: ${e && e.stack || e}`); }
+    }
+    return out;
+  }
+  return {run, selfplay, selfplayGame};
+})();
+
+// ===== UI: renders state, turns taps into engine actions, runs AI seats. =====
+const Q = new URLSearchParams(location.search);
+const $ = (s, el = document) => el.querySelector(s);
+const esc = s => String(s).replace(/[&<>"]/g, c => ({'&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;'}[c]));
+const SKILL_ICON = {Ru: '\u{1F3AD}', St: '\u270A', Co: '\u{1F6E1}\uFE0F', Kn: '\u{1F4D6}', Le: '\u{1F451}'};
+const RACE_ICON = {elves: '\u{1F9DD}', dwarves: '\u26CF\uFE0F', hobbits: '\u{1F9B6}', humans: '\u2694\uFE0F', wizards: '\u{1F9D9}', ents: '\u{1F333}', eagle: '\u{1F985}'};
+const CHAIN_ICON = {helmet: '\u26D1\uFE0F', anvil: '\u2692\uFE0F', fish: '\u{1F41F}', sword: '\u{1F5E1}\uFE0F', horseshoe: '\u{1F9F2}', bow: '\u{1F3F9}',
+  satchel: '\u{1F392}', teapot: '\u{1FAD6}', harp: '\u{1F3B5}', horse: '\u{1F40E}', campfire: '\u{1F525}', axe: '\u{1FA93}', scroll: '\u{1F4DC}',
+  tunic: '\u{1F455}', chest: '\u{1F9F0}', parchment: '\u{1F4C4}', acorn: '\u{1F330}'};
+const CFILL = {grey: '#8f8a80', yellow: '#e2b53b', blue: '#3c7cc4', green: '#4f9a45', red: '#b8402f', purple: '#7b4ba0'};
+const SIDE_COL = ['#2f6db5', '#a42a2a'];
+const RULES_URL = 'https://www.rprod.com/en/games/duel-for-middle-earth';
+const KEY = 'lotrduel.';
+const store = {
+  get(k, d) { try { const v = localStorage.getItem(KEY + k); return v == null ? d : JSON.parse(v); } catch { return d; } },
+  set(k, v) { try { localStorage.setItem(KEY + k, JSON.stringify(v)); } catch {} },
+  del(k) { try { localStorage.removeItem(KEY + k); } catch {} },
+};
+
+const UI = {
+  S: null, undo: [], view: 'cards', tab: 'players', sel: null, viewer: 0, timer: 0, gen: 0, flash: new Set(),
+  sheetMin: matchMedia('(max-width: 759px)').matches,
+  mute: store.get('mute', false), anim: store.get('anim', !matchMedia('(prefers-reduced-motion: reduce)').matches),
+  freeze: Q.has('freeze'), debug: Q.has('debug'), edit: Q.has('edit'), auto: false, zoom: {}, modal: null, passFor: null, setup: null,
+};
+if (UI.freeze) UI.anim = false;
+
+// ---------- sound (Web Audio, synthesised) ----------
+const Sound = (() => {
+  let ctx = null;
+  const tones = {card: [[520, .05]], coin: [[880, .06], [1320, .08]], unit: [[300, .07]], clash: [[160, .12], [120, .12]], quest: [[660, .08], [990, .12]],
+    token: [[740, .06], [988, .06], [1175, .1]], chapter: [[392, .12], [523, .12], [659, .2]], win: [[523, .15], [659, .15], [784, .15], [1047, .35]], click: [[700, .03]]};
+  return name => {
+    if (UI.mute || UI.freeze || UI.auto || !tones[name]) return;
+    try {
+      ctx = ctx || new (window.AudioContext || window.webkitAudioContext)();
+      let t = ctx.currentTime;
+      for (const [f, d] of tones[name]) {
+        const o = ctx.createOscillator(), g = ctx.createGain();
+        o.type = name === 'clash' ? 'sawtooth' : 'triangle'; o.frequency.value = f;
+        g.gain.setValueAtTime(.12, t); g.gain.exponentialRampToValueAtTime(.001, t + d);
+        o.connect(g).connect(ctx.destination); o.start(t); o.stop(t + d + .02); t += d * .9;
+      }
+    } catch {}
+  };
+})();
+
+// ---------- helpers ----------
+const actor = S => S.pending ? S.pending.p : S.active;
+const seat = p => UI.S.seats[p];
+const isHuman = p => seat(p).type === 'human';
+const humans = () => [0, 1].filter(isHuman);
+const pnp = () => humans().length === 2;
+function viewer() {
+  const h = humans();
+  if (h.length === 1) return h[0];
+  if (h.length === 2) return UI.viewer < 0 ? 0 : UI.viewer;
+  return 0;
+}
+const myTurn = () => UI.S && !UI.S.winner && isHuman(actor(UI.S)) && (!pnp() || UI.viewer === actor(UI.S)) && !UI.auto;
+function toast(msg) {
+  const t = document.createElement('div'); t.className = 'toast'; t.textContent = msg; document.body.appendChild(t);
+  setTimeout(() => t.remove(), 1800);
+}
+const coinSVG = (x, y, n, r = 9) => `<circle cx="${x}" cy="${y}" r="${r}" fill="#f2c94c" stroke="#9a6d12" stroke-width="1.5"/><text x="${x}" y="${y + r * .42}" font-size="${r * 1.2}" text-anchor="middle" font-weight="700" fill="#5a3d00">${n}</text>`;
+const ringSVG = (x, y, r = 9) => `<circle cx="${x}" cy="${y}" r="${r}" fill="none" stroke="#d4a017" stroke-width="${r * .45}"/><circle cx="${x}" cy="${y}" r="${r}" fill="none" stroke="#fff3b0" stroke-width="1" opacity=".7"/>`;
+const towerPath = (x, y, s, col) => `<path transform="translate(${x},${y}) scale(${s})" d="M-8 10 L-8 -6 L-10 -6 L-10 -12 L-6 -12 L-6 -9 L-2 -9 L-2 -12 L2 -12 L2 -9 L6 -9 L6 -12 L10 -12 L10 -6 L8 -6 L8 10 Z" fill="${col}" stroke="#1d150c" stroke-width="1.2"/>`;
+const skillStr = arr => arr.map(s => SKILL_ICON[s]).join('');
+const regAbbr = r => rname(r).slice(0, 3).toUpperCase();
+
+// ---------- card art (SVG, 100 x 140) ----------
+function cardInner(id) {
+  const c = CARDS[id], W = 100;
+  let s = `<rect class="cf" width="100" height="140" rx="8" fill="${CFILL[c.color]}" stroke="#2b2118" stroke-width="1.5"/>
+    <rect x="4" y="4" width="92" height="22" rx="5" fill="rgba(255,250,235,.9)"/>`;
+  let x = 9;
+  if (c.cost.coins) { s += coinSVG(x + 4, 15, c.cost.coins, 7.5); x += 17; }
+  for (const k of c.cost.skills) { s += `<text x="${x}" y="20" font-size="12">${SKILL_ICON[k]}</text>`; x += 14.5; }
+  if (!c.cost.coins && !c.cost.skills.length) s += `<text x="9" y="19.5" font-size="11" fill="#5a4a33">free</text>`;
+  const cy = 54;
+  if (c.color === 'yellow') s += coinSVG(W / 2, cy, c.coins, 17);
+  else if (c.color === 'blue') { for (let i = 0; i < c.quest; i++) s += ringSVG(W / 2 + (i - (c.quest - 1) / 2) * 24, cy, 10); }
+  else if (c.color === 'green') s += `<text x="${W / 2}" y="${cy + 13}" font-size="34" text-anchor="middle">${RACE_ICON[c.race]}</text>`;
+  else if (c.color === 'red') {
+    s += `<text x="${W / 2}" y="${cy - 2}" font-size="22" text-anchor="middle" fill="#fff" font-weight="700">${c.units}\u00D7\u265F</text>`;
+    c.regions.forEach((r, i) => {
+      const rx = W / 2 + (i ? 4 : -42), col = REGIONS.find(z => z.id === r).color;
+      s += `<rect x="${rx}" y="${cy + 6}" width="38" height="16" rx="4" fill="${col}" stroke="#fff" stroke-width="1"/><text x="${rx + 19}" y="${cy + 18}" font-size="10" text-anchor="middle" fill="#fff" font-weight="700">${regAbbr(r)}</text>`;
+    });
+  } else if (c.color === 'grey') {
+    const t = c.skills.map(g => g.map(k => SKILL_ICON[k]).join('/')).join(' ');
+    s += `<text x="${W / 2}" y="${cy + 9}" font-size="${t.length > 6 ? 17 : 26}" text-anchor="middle">${t}</text>`;
+  } else if (c.color === 'purple') {
+    const ic = {rmU: '\u2716\u265F', lose: '\u2212\u25CF', move: '\u279C'};
+    s += `<text x="${W / 2}" y="${cy + 7}" font-size="17" text-anchor="middle" fill="#fff" font-weight="700">${c.purple.map(k => ic[k]).join(' ')}</text>`;
+  }
+  if (c.chainIn) s += `<rect x="4" y="74" width="40" height="18" rx="9" fill="rgba(255,250,235,.9)"/><text x="8" y="88" font-size="11">\u{1F517}${CHAIN_ICON[c.chainIn]}</text>`;
+  if (c.chainOut) s += `<rect x="56" y="74" width="40" height="18" rx="9" fill="rgba(255,250,235,.9)"/><text x="60" y="88" font-size="11">\u2192${CHAIN_ICON[c.chainOut]}</text>`;
+  s += `<text x="50" y="132" font-size="9" text-anchor="middle" fill="rgba(255,255,255,.85)">${id}</text>`;
+  return s;
+}
+function cardBack(power) {
+  return `<rect class="cback" width="100" height="140" rx="8"/><circle cx="50" cy="45" r="17" class="ringback"/>` +
+    `<text x="50" y="50" font-size="11" text-anchor="middle" fill="#e0b850" font-family="Georgia">\u2726</text>` +
+    (power ? `<circle cx="82" cy="18" r="11" fill="#6d3fa0" stroke="#fff" stroke-width="1.5"/><text x="82" y="22.5" font-size="12" text-anchor="middle">\u26A1</text>` : '');
+}
+const cardSVGfull = (id, w = 100) => `<svg viewBox="-2 -2 104 144" width="${w}" xmlns="http://www.w3.org/2000/svg">${cardInner(id)}</svg>`;
+
+// ---------- pyramid ----------
+const UX = 56, RY = 92;
+function pyramidSVG() {
+  const S = UI.S, me = viewer(), slots = S.slots;
+  const minX = Math.min(...slots.map(s => s.x)), maxX = Math.max(...slots.map(s => s.x)), rows = Math.max(...slots.map(s => s.r)) + 1;
+  const W = (maxX - minX) * UX + 100 + 16, H = (rows - 1) * RY + 140 + 16;
+  const pend = S.pending && myTurn() ? S.pending : null;
+  const targ = new Set(pend ? pend.opts.filter(o => o.slot !== undefined).map(o => o.slot) : []);
+  const main = myTurn() && !S.pending && !S.mainDone;
+  const legal = main ? Engine.legalActions(S) : [];
+  let s = '';
+  slots.forEach((sl, i) => {
+    const x = 8 + (sl.x - minX) * UX, y = 8 + sl.r * RY;
+    if (sl.taken) { s += `<rect class="slotgap" x="${x + 3}" y="${y + 3}" width="94" height="134" rx="8"/>`; return; }
+    const avail = Engine.slotAvailable(S, i);
+    const canTake = legal.some(a => a.t === 'take' && a.slot === i);
+    const forced = S.forced && S.forced.slot === i;
+    const cls = ['card', canTake || targ.has(i) || avail ? 'avail' : '', targ.has(i) ? 'target' : '', main && avail && !canTake ? 'dim' : ''].join(' ');
+    let badge = '';
+    if (sl.face && avail && main && canTake) {
+      const c = Engine.cardCost(S, S.active, sl.id), afford = c.coins <= S.players[S.active].coins;
+      badge = `<g transform="translate(78,112)"><circle r="14" fill="${afford ? '#fffaf0' : '#f3c9c1'}" stroke="${afford ? '#2f7d3a' : '#a42a2a'}" stroke-width="2"/><text y="5" font-size="${c.chain ? 13 : 14}" text-anchor="middle" font-weight="700">${c.chain ? '\u{1F517}' : c.coins}</text></g>`;
+    }
+    if (forced) badge += `<g transform="translate(22,112)"><circle r="14" fill="#5b2c6f" stroke="#fff"/><text y="5" font-size="12" text-anchor="middle" fill="#fff">\u26A0</text></g>`;
+    const dbg = UI.debug ? `<text x="50" y="104" font-size="11" text-anchor="middle" fill="#0f0" stroke="#000" stroke-width=".4">#${i} r${sl.r} i${sl.i} x${sl.x}</text>` : '';
+    s += `<g class="${cls}" data-a="slot" data-i="${i}" transform="translate(${x},${y})">${sl.face ? cardInner(sl.id) : cardBack(sl.power)}${badge}${dbg}</g>`;
+  });
+  return `<svg viewBox="0 0 ${W} ${H}" preserveAspectRatio="xMidYMid meet" xmlns="http://www.w3.org/2000/svg">${s}</svg>`;
+}
+
+// ---------- map ----------
+function mapSVG() {
+  const S = UI.S;
+  const pend = S.pending && myTurn() ? S.pending : null;
+  let targ = new Set();
+  if (pend) {
+    if (pend.type === 'move') targ = new Set(UI.sel ? pend.opts.filter(o => o.from === UI.sel).map(o => o.to) : pend.opts.filter(o => o.from).map(o => o.from));
+    else if (pend.type === 'units2') targ = new Set(REGION_IDS);
+    else targ = new Set(pend.opts.filter(o => o.region).map(o => o.region));
+  }
+  let s = `<defs><radialGradient id="sea" cx="50%" cy="45%" r="70%"><stop offset="0" stop-color="#f4ead0"/><stop offset="1" stop-color="#d9c493"/></radialGradient></defs>
+    <rect x="0" y="0" width="1000" height="700" fill="url(#sea)"/>
+    <path d="M0 0 L60 0 Q30 200 70 360 Q20 520 50 700 L0 700 Z" fill="#a9c4d6" opacity=".7"/>
+    <text x="22" y="420" font-size="20" fill="#5d7f96" font-family="Georgia" transform="rotate(-90 22 420)">Belegaer</text>
+    <text x="935" y="680" font-size="30" text-anchor="middle">\u{1F30B}</text>`;
+  EDGES.forEach(([a, b], i) => {
+    const A = REGIONS.find(r => r.id === a), B = REGIONS.find(r => r.id === b);
+    s += `<line x1="${A.x}" y1="${A.y}" x2="${B.x}" y2="${B.y}" stroke="#8b7550" stroke-width="12" stroke-linecap="round" opacity=".55"/>
+      <line x1="${A.x}" y1="${A.y}" x2="${B.x}" y2="${B.y}" stroke="#f7efda" stroke-width="3" stroke-dasharray="10 9"/>`;
+    for (const bl of S.blocked.filter(z => z.e === i)) {
+      const mx = (A.x + B.x) / 2, my = (A.y + B.y) / 2;
+      s += `<circle cx="${mx}" cy="${my}" r="17" fill="${SIDE_COL[bl.vs]}" stroke="#000" stroke-width="2"/><text x="${mx}" y="${my + 7}" font-size="19" text-anchor="middle">\u{1F525}</text>`;
+    }
+    if (UI.debug) s += `<text x="${(A.x + B.x) / 2}" y="${(A.y + B.y) / 2 - 18}" font-size="14" fill="#060" text-anchor="middle">e${i}</text>`;
+  });
+  for (const R of REGIONS) {
+    const b = S.board[R.id];
+    const cls = ['region', targ.has(R.id) ? 'target' : '', UI.sel === R.id ? 'sel' : '', UI.flash.has(R.id) && UI.anim ? 'flash' : ''].join(' ');
+    s += `<g class="${cls}" data-a="region" data-r="${R.id}">
+      <circle class="rc" cx="${R.x}" cy="${R.y}" r="86" fill="${R.color}" fill-opacity=".88" stroke="#1d150c" stroke-width="3"/>
+      <text x="${R.x}" y="${R.y - 48}" font-size="21" text-anchor="middle" fill="#fff" font-family="Georgia" font-weight="700" stroke="#1d150c" stroke-width=".6">${R.name}</text>`;
+    for (const p of [0, 1]) {
+      const ux = R.x + (p ? 30 : -30), uy = R.y + 2;
+      if (b.u[p]) s += `<circle cx="${ux}" cy="${uy}" r="22" fill="${SIDE_COL[p]}" stroke="#fff" stroke-width="3"/><text x="${ux}" y="${uy + 8}" font-size="22" text-anchor="middle" fill="#fff" font-weight="700">${b.u[p]}</text>`;
+      if (b.f[p]) s += towerPath(R.x + (p ? 28 : -28), R.y + 50, 1.6, SIDE_COL[p]) + (b.f[p] > 1 ? `<text x="${R.x + (p ? 50 : -50)}" y="${R.y + 62}" font-size="16" fill="#fff" font-weight="700">\u00D7${b.f[p]}</text>` : '');
+    }
+    if (UI.debug || UI.edit) s += `<text x="${R.x}" y="${R.y + 105}" font-size="14" text-anchor="middle" fill="#060">${R.id} (${R.x},${R.y})</text>`;
+    s += `</g>`;
+  }
+  return `<svg viewBox="0 0 1000 700" preserveAspectRatio="xMidYMid meet" xmlns="http://www.w3.org/2000/svg">${s}</svg>`;
+}
+function questSVG() {
+  const S = UI.S, X = i => 22 + i * 41;
+  const bonusIcon = (i, y) => {
+    const b = QUEST_BONUS[i];
+    if (!b) return '';
+    if (b === 'coin') return coinSVG(X(i), y, 1, 8);
+    if (b === 'unit') return `<text x="${X(i)}" y="${y + 6}" font-size="17" text-anchor="middle">\u265F</text>`;
+    if (b === 'turn') return `<text x="${X(i)}" y="${y + 6}" font-size="18" text-anchor="middle" font-weight="700">\u21BB</text>`;
+    return `<text x="${X(i) - 7}" y="${y + 5}" font-size="12" text-anchor="middle">\u2716</text>` + towerPath(X(i) + 6, y, .65, '#555');
+  };
+  let s = '';
+  [0, 1].forEach(p => {
+    const y = p ? 120 : 44, P = S.players[p];
+    s += `<text x="4" y="${p ? y - 22 : y - 26}" font-size="14" font-weight="700" fill="${SIDE_COL[p]}">${p ? 'Nazg\u00fbl hunting Frodo' : 'Frodo & Sam to Mount Doom'}${S.questBlock[p] ? ` \u00B7 \u26A1${S.questBlock[p]} blocking` : ''}</text>`;
+    s += `<line x1="${X(0)}" y1="${y}" x2="${X(14)}" y2="${y}" stroke="#8b7550" stroke-width="5"/>`;
+    for (let i = 0; i <= 14; i++) {
+      s += `<circle cx="${X(i)}" cy="${y}" r="${i === 14 ? 15 : 12}" fill="${i <= P.quest && i ? SIDE_COL[p] : '#fffaf0'}" stroke="#5a4a33" stroke-width="2"/>`;
+      s += bonusIcon(i, p ? y + 22 : y - 22);
+    }
+    s += `<text x="${X(14)}" y="${y + 6}" font-size="16" text-anchor="middle">${p ? '\u{1F9D1}' : '\u{1F30B}'}</text>`;
+    s += `<g transform="translate(${X(P.quest)},${y})"><circle r="16" fill="${p ? '#2b2b2b' : '#f2c94c'}" stroke="#fff" stroke-width="3"/><text y="6" font-size="16" text-anchor="middle">${p ? '\u{1F441}\uFE0F' : '\u{1F48D}'}</text></g>`;
+  });
+  return `<svg class="quest" viewBox="0 0 620 162" preserveAspectRatio="xMidYMid meet" xmlns="http://www.w3.org/2000/svg">${s}</svg>`;
+}
+
+// ---------- tiles ----------
+function tilesHTML() {
+  const S = UI.S, main = myTurn() && !S.pending && !S.mainDone;
+  const legal = main ? Engine.legalActions(S) : [];
+  const pend = S.pending && myTurn() ? S.pending : null;
+  const targ = new Set(pend ? pend.opts.filter(o => o.tile).map(o => o.tile) : []);
+  let h = S.tilesFace.map(t => {
+    const T = TILES[t], ok = legal.some(a => a.t === 'tile' && a.tile === t) || targ.has(t);
+    const c = Engine.tileCost(S, S.active, t), locked = S.tileLocks.includes(t);
+    return `<button class="tile ${ok ? 'legal' : ''} ${T.fan ? 'fan' : ''} ${locked ? 'locked' : ''}" data-a="tile" data-t="${t}">
+      <span class="tc">${main ? `<svg width="22" height="22" viewBox="-11 -11 22 22">${coinSVG(0, 0, c.coins, 10)}</svg>` : ''}</span>
+      <div class="tn">${esc(T.name)}</div>
+      <div class="ts">${skillStr(T.skills.split(' '))}</div>
+      <div class="muted">${T.region ? rname(T.region) : 'No region'}${locked ? ' \u00B7 locked' : ''}</div></button>`;
+  }).join('');
+  for (let i = S.tilesFace.length; i < 3; i++) h += `<div class="tile empty"><div class="tn">\u2014</div><div class="muted">${S.tilesDeck.length} left in deck</div></div>`;
+  return h;
+}
+
+// ---------- player panels ----------
+function skillTotals(P) {
+  const t = {}, ch = [];
+  for (const id of P.cards) { const c = CARDS[id]; if (c.skills) for (const g of c.skills) { if (g.length === 1) t[g[0]] = (t[g[0]] || 0) + 1; else ch.push(g); } }
+  return {t, ch};
+}
+function playerHTML(p) {
+  const S = UI.S, P = S.players[p], me = viewer(), mine = p === me || (!humans().length);
+  const races = new Set(greens(P));
+  const {t, ch} = skillTotals(P);
+  const colors = {}; for (const id of P.cards) colors[CARDS[id].color] = (colors[CARDS[id].color] || 0) + 1;
+  const left = QUEST_LEN - P.quest;
+  let h = `<div class="player p${p} ${S.active === p && !S.winner ? 'active' : ''}"><h3><span>${esc(pname(S, p))} <small class="muted">${SIDE_NAMES[SIDES[p]]}${seat(p).type === 'ai' ? ` \u00B7 AI ${seat(p).level}` : ''}</small></span><span>${S.active === p && !S.winner ? '\u25B6' : ''}</span></h3>
+    <div class="stats"><div><b>${P.coins}</b>Coins</div><div><b>${P.quest}/14</b>Quest</div><div><b>${Engine.regionCount(S, p)}/7</b>Regions</div><div><b>${Engine.distinctRaces(P)}/6</b>Races</div></div>
+    <div class="sub2"><span class="muted">Supply:</span> ${P.units} Units \u00B7 ${P.forts} Fortresses${S.opts.allies ? ` \u00B7 \u26A1 ${P.power} Power` : ''}</div>
+    <div class="sub2"><span class="muted">Races:</span><div class="chips">${RACES.map(r => `<span class="chip ${races.has(r) ? '' : 'miss'}" title="${RACE_NAMES[r]}">${RACE_ICON[r]} ${greens(P).filter(x => x === r).length || ''}</span>`).join('')}${hasHook(P, 'eagle') ? `<span class="chip">${RACE_ICON.eagle}</span>` : ''}</div></div>
+    <div class="sub2"><span class="muted">Skills:</span> ${SKILLS.map(k => t[k] ? `${SKILL_ICON[k]}\u00D7${t[k]}` : '').filter(Boolean).join(' ') || '\u2014'}${ch.map(g => ` [${g.map(k => SKILL_ICON[k]).join('/')}]`).join('')}${hasHook(P, 'wildSkill') ? ' +1 any' : ''}</div>
+    <div class="sub2"><span class="muted">Cards:</span> ${COLORS.map(c => colors[c] ? `<span class="cc" style="background:${CFILL[c]}"></span>${colors[c]}` : '').filter(Boolean).join(' ') || '\u2014'}
+      ${P.cards.some(id => CARDS[id].chainOut) ? `<div class="chips">${P.cards.filter(id => CARDS[id].chainOut).map(id => `<span class="chip" title="Chain symbol">\u2192${CHAIN_ICON[CARDS[id].chainOut]}</span>`).join('')}</div>` : ''}</div>`;
+  if (P.landmarks.length) h += `<div class="sub2"><span class="muted">Landmarks:</span> ${P.landmarks.map(l => esc(TILES[l].name)).join(', ')}</div>`;
+  if (P.tokens.length) h += `<div class="sub2"><span class="muted">Alliance tokens:</span>${P.tokens.map(k => `<div class="chip" style="display:block;border-radius:8px;margin-top:3px">${RACE_ICON[TOKENS[k].race]} ${esc(TOKENS[k].text)}</div>`).join('')}</div>`;
+  if (S.opts.allies) {
+    const A = P.allies, acts = myTurn() && actor(S) === p && !S.pending ? Engine.allyActions(S, p) : [];
+    h += `<div class="sub2"><span class="muted">Allies:</span>`;
+    for (const a of A.front) {
+      const can = acts.some(x => x.a === a && x.mode === 'exit');
+      h += `<div class="ally"><b>${esc(ALLIES[a].name)}</b> <span class="muted">(in play)</span><div>Exit: ${esc(ALLIES[a].xt)}</div>${can ? `<button data-a="ally" data-ally="${a}" data-mode="exit" class="lock">Send away (2\u26A1)</button>` : ''}</div>`;
+    }
+    if (mine) for (const a of A.hand) {
+      const can = acts.some(x => x.a === a && x.mode === 'enter');
+      h += `<div class="ally"><b>${esc(ALLIES[a].name)}</b> <span class="muted">(hidden)</span><div>Enter: ${esc(ALLIES[a].et)}</div><div class="muted">Exit: ${esc(ALLIES[a].xt)}</div>${can ? `<button data-a="ally" data-ally="${a}" data-mode="enter" class="lock">Call (1\u26A1)</button>` : ''}</div>`;
+    }
+    else if (A.hand.length) h += `<div class="ally muted">${A.hand.length} hidden Ally card${A.hand.length > 1 ? 's' : ''}</div>`;
+    if (A.gone.length) h += `<div class="muted" style="font-size:12px">Gone: ${A.gone.map(a => esc(ALLIES[a].name)).join(', ')}</div>`;
+    h += `</div>`;
+  }
+  return h + `<div class="muted" style="font-size:12px;margin-top:4px">${p ? `The Nazg\u00fbl need ${left} more` : `Frodo needs ${left} more`} Quest space${left === 1 ? '' : 's'}.</div></div>`;
+}
+
+// ---------- prompt / action bar ----------
+function promptHTML() {
+  const S = UI.S;
+  if (S.winner) {
+    const w = S.winner;
+    return `<div class="prompt"><div class="who">Game over</div><div class="msg">${w.p === 'tie' ? 'A shared victory' : `${esc(pname(S, w.p))} wins`}: ${esc(REASONS[w.reason])}.</div>
+      <div class="actrow"><button class="primary" data-a="result">Results</button><button data-a="landing">Main menu</button></div></div>`;
+  }
+  const p = actor(S), name = esc(pname(S, p)), col = p ? 'sau' : 'fel';
+  const sheet = `<button class="sheetbtn ghost" data-a="sheet">${UI.sheetMin ? 'Players \u25B4' : 'Less \u25BE'}</button>`;
+  if (!myTurn()) {
+    return `<div class="prompt">${sheet}<div class="who ${col}">${name}</div><div class="msg">${UI.auto ? 'Self-play\u2026' : isHuman(p) ? 'Waiting\u2026' : 'is thinking\u2026'}</div></div>`;
+  }
+  let h = `<div class="prompt">${sheet}<div class="who ${col}">${name}${S.extra ? ` <small class="muted">(+${S.extra} extra turn${S.extra > 1 ? 's' : ''})</small>` : ''}</div>`;
+  if (S.pending) {
+    const pd = S.pending;
+    h += `<div class="msg">${esc(pd.prompt)}</div><div class="opts">`;
+    let opts = pd.opts.map((o, i) => ({o, i}));
+    if (pd.type === 'units2') {
+      opts = UI.sel ? opts.filter(({o}) => o.regions.includes(UI.sel)) : opts.filter(({o}) => o.regions[0] === o.regions[1]);
+      h += `<div class="muted" style="width:100%;font-size:13px">${UI.sel ? `Selected ${rname(UI.sel)}: tap it again for 2 Units, or another region.` : 'Tap a region on the map, or choose below.'}</div>`;
+    }
+    if (pd.type === 'move' && UI.sel) opts = opts.filter(({o}) => o.skip || o.from === UI.sel);
+    for (const {o, i} of opts) {
+      const irr = Engine.apply(S, {t: 'choose', i}).irrev;
+      if (o.card && pd.type !== 'grey') h += `<button class="mini ${irr ? 'lock' : ''}" data-a="opt" data-i="${i}" title="${esc(o.label)}">${cardSVGfull(o.card, 62)}</button>`;
+      else h += `<button class="${irr ? 'lock' : ''}" data-a="opt" data-i="${i}">${esc(o.label)}</button>`;
+    }
+    h += `</div>`;
+  } else if (!S.mainDone) {
+    h += `<div class="msg">Take an available card (play or discard it), or build a Landmark.${S.forced && S.forced.p === S.active ? ' <b>Gr\u00edma: you must take the marked card.</b>' : ''}</div>`;
+  } else {
+    h += `<div class="msg">Main action done. You may still call or send away an Ally, then end your turn.</div>`;
+  }
+  const legal = Engine.legalActions(S);
+  h += `<div class="actrow"><button data-a="undo" ${UI.undo.length ? '' : 'disabled'}>\u21B6 Undo</button>${legal.some(a => a.t === 'end') ? `<button class="primary" data-a="end">End turn</button>` : ''}</div></div>`;
+  return h;
+}
+function journalHTML() {
+  const L = UI.S.log.slice(-150).reverse();
+  return `<ul class="log">${L.map(l => `<li class="p${l.p} ${l.kind}">${esc(l.text)}</li>`).join('')}</ul>`;
+}
+function intelHTML() {
+  const v = viewer();
+  return `<div class="muted" style="font-size:13px">Hints about ${esc(pname(UI.S, opp(v)))} from what is visible on the table.</div><ul class="intel">${AI.intel(UI.S, v).map(x => `<li>${esc(x)}</li>`).join('')}</ul>`;
+}
+function sideBody() {
+  if (UI.tab === 'journal') return journalHTML();
+  if (UI.tab === 'intel') return intelHTML();
+  const me = viewer();
+  return playerHTML(opp(me)) + playerHTML(me);
+}
+
+// ---------- full render ----------
+function renderGame() {
+  const S = UI.S, app = $('#app');
+  const keepScroll = $('.tabbody') ? $('.tabbody').scrollTop : 0;
+  const pill = p => { const P = S.players[p]; return `<span class="pill ${S.active === p && !S.winner ? 'active' : ''}" title="${esc(pname(S, p))}: Coins, Quest, Regions, Races"><span class="dot" style="background:${SIDE_COL[p]}"></span>${P.coins}\u25CF ${P.quest}/14\u{1F48D} ${Engine.regionCount(S, p)}/7 ${Engine.distinctRaces(P)}/6</span>`; };
+  const disc = S.discard.length;
+  app.innerHTML = `<div id="game" class="${UI.anim ? '' : 'noanim'}">
+    <div class="top"><button data-a="menu" title="Menu">\u2630</button><span class="title">LOTR Duel</span>
+      <span class="pills"><span class="pill chpill">Ch ${S.chapter}</span>${pill(0)}${pill(1)}</span><span class="spacer"></span>
+      <button data-a="discard" title="Discard pile">\u{1F5D1} ${disc}</button><button data-a="mute" title="Sound">${UI.mute ? '\u{1F507}' : '\u{1F50A}'}</button><button data-a="help" title="How to play">?</button></div>
+    <div class="main show-${UI.view}">
+      <div class="tabsbar"><button class="${UI.view === 'cards' ? 'on' : ''}" data-a="view" data-v="cards">Cards &amp; Landmarks</button><button class="${UI.view === 'map' ? 'on' : ''}" data-a="view" data-v="map">Middle-earth</button></div>
+      <section class="view v-cards"><div class="vtitle">Chapter ${S.chapter} <small>${Engine.availableSlots(S).length} available \u00B7 ${S.slots.filter(s => !s.taken).length} left</small></div>
+        <div class="zoom" data-z="cards"><button class="fit" data-a="fit" data-z="cards">Fit</button><div class="inner">${pyramidSVG()}</div></div>
+        <div class="tiles">${tilesHTML()}</div></section>
+      <section class="view v-map"><div class="zoom" data-z="map"><button class="fit" data-a="fit" data-z="map">Fit</button><div class="inner">${mapSVG()}</div></div>${questSVG()}</section>
+      <aside class="side ${UI.sheetMin ? 'min' : ''}">${promptHTML()}<div class="panelrest"><div class="tabs">${['players', 'journal', 'intel'].map(t => `<button class="${UI.tab === t ? 'on' : ''}" data-a="tab" data-t="${t}">${{players: 'Players', journal: 'Journal', intel: 'Rival intel'}[t]}</button>`).join('')}</div>
+        <div class="tabbody">${sideBody()}</div></div></aside>
+    </div></div>${UI.debug ? debugHTML() : ''}`;
+  if (UI.tab !== 'journal') $('.tabbody').scrollTop = keepScroll;
+  for (const z of document.querySelectorAll('.zoom')) applyZoom(z);
+  UI.flash = new Set();
+}
+function debugHTML() {
+  const S = UI.S;
+  return `<div class="dbg">seed ${S.seed} \u00B7 turn ${S.turnNo} \u00B7 active ${S.active} \u00B7 ch ${S.chapter}<br>pending ${S.pending ? S.pending.type + ' p' + S.pending.p : '-'} \u00B7 queue ${S.queue.length} \u00B7 extra ${S.extra} \u00B7 irrev ${S.irrev}
+    <br>tiles deck: ${S.tilesDeck.join(', ')}<br><button data-a="dump">Dump state</button>${UI.edit ? `<textarea readonly>${REGIONS.map(r => `{id: '${r.id}', x: ${r.x}, y: ${r.y}}`).join('\n')}</textarea>` : ''}</div>`;
+}
+
+// ---------- zoom (pinch, wheel, drag) ----------
+function applyZoom(el) {
+  const z = UI.zoom[el.dataset.z] || {s: 1, x: 0, y: 0};
+  el.firstElementChild.nextElementSibling.style.transform = `translate(${z.x}px,${z.y}px) scale(${z.s})`;
+}
+const ptrs = new Map();
+let moved = false, pinch = null;
+function zoomOf(el) { return UI.zoom[el.dataset.z] || (UI.zoom[el.dataset.z] = {s: 1, x: 0, y: 0}); }
+function clampZ(z, el) {
+  z.s = Math.min(4, Math.max(1, z.s));
+  const w = el.clientWidth, h = el.clientHeight;
+  z.x = Math.min(0, Math.max(w - w * z.s, z.x)); z.y = Math.min(0, Math.max(h - h * z.s, z.y));
+}
+document.addEventListener('pointerdown', e => {
+  const el = e.target.closest('.zoom'); if (!el) return;
+  if (UI.edit && e.target.closest('[data-a="region"]')) { UI.drag = {r: e.target.closest('[data-a="region"]').dataset.r, el}; return; }
+  ptrs.set(e.pointerId, {x: e.clientX, y: e.clientY, el}); moved = false;
+  if (ptrs.size === 2) { const [a, b] = [...ptrs.values()]; pinch = {d: Math.hypot(a.x - b.x, a.y - b.y), z: {...zoomOf(el)}, cx: (a.x + b.x) / 2, cy: (a.y + b.y) / 2}; }
+});
+document.addEventListener('pointermove', e => {
+  if (UI.drag) {
+    const svg = UI.drag.el.querySelector('svg'), pt = svg.createSVGPoint(); pt.x = e.clientX; pt.y = e.clientY;
+    const q = pt.matrixTransform(svg.getScreenCTM().inverse()), R = REGIONS.find(r => r.id === UI.drag.r);
+    R.x = Math.round(q.x / 5) * 5; R.y = Math.round(q.y / 5) * 5; renderGame(); return;
+  }
+  const p = ptrs.get(e.pointerId); if (!p) return;
+  const el = p.el, z = zoomOf(el), r = el.getBoundingClientRect();
+  if (ptrs.size === 2 && pinch) {
+    p.x = e.clientX; p.y = e.clientY;
+    const [a, b] = [...ptrs.values()], d = Math.hypot(a.x - b.x, a.y - b.y), k = d / pinch.d;
+    const ns = Math.min(4, Math.max(1, pinch.z.s * k)), cx = pinch.cx - r.left, cy = pinch.cy - r.top;
+    z.x = cx - (cx - pinch.z.x) * ns / pinch.z.s; z.y = cy - (cy - pinch.z.y) * ns / pinch.z.s; z.s = ns;
+    clampZ(z, el); applyZoom(el); moved = true; return;
+  }
+  const dx = e.clientX - p.x, dy = e.clientY - p.y;
+  if (Math.abs(dx) + Math.abs(dy) > 8) moved = true;
+  if (moved && z.s > 1) { z.x += dx; z.y += dy; p.x = e.clientX; p.y = e.clientY; clampZ(z, el); applyZoom(el); }
+});
+const endPtr = e => { ptrs.delete(e.pointerId); if (ptrs.size < 2) pinch = null; if (UI.drag) UI.drag = null; };
+document.addEventListener('pointerup', endPtr); document.addEventListener('pointercancel', endPtr);
+document.addEventListener('wheel', e => {
+  const el = e.target.closest('.zoom'); if (!el || !UI.S) return;
+  e.preventDefault();
+  const z = zoomOf(el), r = el.getBoundingClientRect(), cx = e.clientX - r.left, cy = e.clientY - r.top;
+  const ns = Math.min(4, Math.max(1, z.s * (e.deltaY < 0 ? 1.15 : 1 / 1.15)));
+  z.x = cx - (cx - z.x) * ns / z.s; z.y = cy - (cy - z.y) * ns / z.s; z.s = ns; clampZ(z, el); applyZoom(el);
+}, {passive: false});
+
+// ---------- modal ----------
+function modal({title, body, x = true, dock = true, buttons = []}) {
+  closeModal();
+  const b = document.createElement('div');
+  b.className = 'backdrop' + (UI.docked && dock ? ' docked' : '');
+  b.innerHTML = `<div class="modal" role="dialog" aria-label="${esc(title)}"><div class="mh"><h2>${esc(title)}</h2>${dock ? `<button class="ghost" data-m="dock" title="Dock to side">\u21E5</button>` : ''}${x ? `<button class="ghost" data-m="x" aria-label="Close">\u2715</button>` : ''}</div>
+    <div class="mb">${body}</div><div class="mf">${buttons.map((bt, i) => `<button class="${bt.cls || ''}" data-m="b${i}" ${bt.disabled ? 'disabled' : ''}>${bt.label}</button>`).join('')}${x ? `<button data-m="x">Close</button>` : ''}</div></div>`;
+  b.addEventListener('click', e => {
+    const m = e.target.closest('[data-m]');
+    if (e.target === b && x) return closeModal();
+    if (!m) return;
+    const k = m.dataset.m;
+    if (k === 'x') return closeModal();
+    if (k === 'dock') { UI.docked = !UI.docked; b.classList.toggle('docked', UI.docked); return; }
+    const bt = buttons[+k.slice(1)]; if (bt && bt.fn) { if (!bt.keep) closeModal(); bt.fn(); }
+  });
+  document.body.appendChild(b);
+  UI.modal = {el: b, x};
+}
+function closeModal() { if (UI.modal) { UI.modal.el.remove(); UI.modal = null; } }
+document.addEventListener('keydown', e => { if (e.key === 'Escape' && UI.modal && UI.modal.x) closeModal(); });
+
+// ---------- committing actions ----------
+function logKinds(a, b) { return new Set(b.log.slice(a.log.length).map(l => l.kind)); }
+function commit(a, human) {
+  const prev = UI.S, N = Engine.apply(prev, a);
+  if (human) UI.undo.push(prev); else UI.undo = [];
+  if (N.irrev) UI.undo = [];
+  UI.S = N; UI.sel = null;
+  for (const r of REGION_IDS) if (JSON.stringify(prev.board[r]) !== JSON.stringify(N.board[r])) UI.flash.add(r);
+  const k = logKinds(prev, N);
+  Sound(k.has('win') ? 'win' : k.has('chapter') ? 'chapter' : k.has('conflict') ? 'clash' : k.has('token') ? 'token' : k.has('quest') ? 'quest' : k.has('units') ? 'unit' : k.has('coins') ? 'coin' : 'card');
+  if (k.has('chapter') && !UI.auto) toast(`Chapter ${N.chapter}`);
+  autoView();
+  save();
+  if (!UI.auto) { renderGame(); next(); }
+}
+function autoView() {
+  const S = UI.S;
+  if (!myTurn()) return;
+  if (S.pending) {
+    const o = S.pending.opts;
+    if (o.some(x => x.region || x.from) || S.pending.type === 'units2') UI.view = 'map';
+    else if (o.some(x => x.slot !== undefined || x.tile)) UI.view = 'cards';
+  } else if (!S.mainDone) UI.view = 'cards';
+}
+function next() {
+  clearTimeout(UI.timer);
+  const S = UI.S, gen = UI.gen;
+  if (S.winner) { finishGame(); return; }
+  const p = actor(S);
+  if (!isHuman(p)) {
+    UI.timer = setTimeout(() => {
+      if (gen !== UI.gen) return;
+      const a = AI.decide(UI.S, seat(p).level);
+      commit(a, false);
+    }, UI.freeze ? 0 : UI.anim ? 650 : 120);
+  } else if (pnp() && UI.viewer !== p) showPass(p);
+}
+function showPass(p) {
+  const d = document.createElement('div'); d.className = 'pass';
+  d.innerHTML = `<div><h2>Pass to ${esc(pname(UI.S, p))}</h2><p>Hand the device over. Hidden Allies and discard peeks stay private.</p><button class="primary" id="passok">I am ${esc(pname(UI.S, p))}: show my view</button></div>`;
+  document.body.appendChild(d);
+  $('#passok').onclick = () => { d.remove(); UI.viewer = p; UI.undo = []; autoView(); renderGame(); };
+}
+function finishGame() {
+  if (UI.S.done) return;
+  UI.S.done = true; save();
+  recordStats(UI.S);
+  setTimeout(showResult, UI.freeze ? 0 : 500);
+}
+function showResult() {
+  const S = UI.S, R = Engine.result(S), w = S.winner;
+  const row = (k, f) => `<tr><td>${k}</td>${R.rows.map(f).map(x => `<td>${x}</td>`).join('')}</tr>`;
+  const body = `<p><b>${w.p === 'tie' ? 'A shared victory!' : `${esc(pname(S, w.p))} wins`}</b> \u2014 ${esc(REASONS[w.reason])}.</p>
+    <table class="res"><tr><th></th>${R.rows.map(r => `<th style="color:${SIDE_COL[SIDES.indexOf(r.side)]}">${esc(r.name)}</th>`).join('')}</tr>
+    ${row('Regions', r => r.regions)}${row('Races', r => r.races)}${row('Quest', r => r.quest + '/14')}${row('Coins', r => r.coins)}${row('Cards', r => r.cards)}${row('Landmarks', r => r.landmarks)}${row('Units on board', r => r.units)}</table>`;
+  modal({title: 'Game over', body, buttons: [{label: 'New game', cls: 'primary', fn: () => landing()}]});
+}
+
+// ---------- click handling ----------
+document.addEventListener('click', e => {
+  if (moved) { moved = false; if (e.target.closest('.zoom')) { e.stopPropagation(); return; } }
+  const el = e.target.closest('[data-a]'); if (!el || e.target.closest('.modal')) return;
+  const a = el.dataset.a, S = UI.S;
+  Sound('click');
+  switch (a) {
+    case 'slot': return onSlot(+el.dataset.i);
+    case 'tile': return onTile(el.dataset.t);
+    case 'region': return onRegion(el.dataset.r);
+    case 'opt': if (myTurn() && S.pending) commit({t: 'choose', i: +el.dataset.i}, true); return;
+    case 'ally': return onAlly(el.dataset.ally, el.dataset.mode);
+    case 'end': if (myTurn()) commit({t: 'end'}, true); return;
+    case 'undo': if (UI.undo.length) { UI.S = UI.undo.pop(); UI.sel = null; save(); renderGame(); } return;
+    case 'view': UI.view = el.dataset.v; return renderGame();
+    case 'tab': UI.tab = el.dataset.t; return renderGame();
+    case 'sheet': UI.sheetMin = !UI.sheetMin; return renderGame();
+    case 'fit': UI.zoom[el.dataset.z] = {s: 1, x: 0, y: 0}; return renderGame();
+    case 'mute': UI.mute = !UI.mute; store.set('mute', UI.mute); return renderGame();
+    case 'menu': return showMenu();
+    case 'help': return showHelp();
+    case 'discard': return showDiscard();
+    case 'result': return showResult();
+    case 'landing': return landing();
+    case 'dump': console.log(JSON.stringify(S)); return toast('State written to the console');
+  }
+});
+function onSlot(i) {
+  const S = UI.S, sl = S.slots[i];
+  if (myTurn() && S.pending) {
+    const k = S.pending.opts.findIndex(o => o.slot === i);
+    if (k >= 0) commit({t: 'choose', i: k}, true);
+    return;
+  }
+  if (!sl.face) return modal({title: 'Facedown card', body: `<p>${Engine.slotAvailable(S, i) ? 'This card will be revealed shortly.' : 'This card is covered. It is revealed when no card covers it any more.'}</p>${sl.power ? '<p>\u26A1 A Power token lies on it: whoever reveals it gains the token.</p>' : ''}`});
+  const c = CARDS[sl.id], avail = Engine.slotAvailable(S, i), main = myTurn() && !S.mainDone;
+  const legal = main ? Engine.legalActions(S).filter(a => a.t === 'take' && a.slot === i) : [];
+  const p = myTurn() ? S.active : viewer(), cost = Engine.cardCost(S, p, sl.id);
+  let info = `<p><b>${esc(Engine.cardLabel(sl.id))}</b></p><p>Cost: ${c.cost.coins ? c.cost.coins + ' Coin' + (c.cost.coins > 1 ? 's' : '') + ' ' : ''}${skillStr(c.cost.skills) || (c.cost.coins ? '' : 'free')}</p>`;
+  if (c.chainIn) info += `<p>\u{1F517} Free by chaining with ${CHAIN_ICON[c.chainIn]} ${CHAIN_NAMES[c.chainIn]}.</p>`;
+  if (c.chainOut) info += `<p>Gives chain symbol ${CHAIN_ICON[c.chainOut]} ${CHAIN_NAMES[c.chainOut]} for a later card.</p>`;
+  info += `<p class="muted">${cost.chain ? 'You can chain it for free.' : `To play it: ${cost.coins} Coin${cost.coins === 1 ? '' : 's'} (${cost.missing} missing Skill${cost.missing === 1 ? '' : 's'}${c.cost.coins ? ` + ${c.cost.coins} printed` : ''}). You have ${S.players[p].coins}.`}</p>`;
+  if (!avail) info += `<p class="muted">Covered: not available yet.</p>`;
+  const buttons = legal.map(a => {
+    const irr = Engine.apply(S, a).irrev;
+    const lab = a.mode === 'play' ? `Play${cost.coins ? ` (${cost.coins}\u25CF)` : ''}` : `Discard (+${S.chapter * (hasHook(S.players[S.active], 'discardDouble') ? 2 : 1)}\u25CF)`;
+    return {label: lab + (irr ? ' \u{1F512}' : ''), cls: a.mode === 'play' ? 'primary' : '', fn: () => commit(a, true)};
+  });
+  if (main && avail && !legal.some(a => a.mode === 'play') && !(S.forced && S.forced.mode === 'discard')) info += `<p class="muted">You cannot afford to play it.</p>`;
+  modal({title: `${c.color[0].toUpperCase() + c.color.slice(1)} card`, body: `<div class="cardbig">${cardSVGfull(sl.id, 130)}<div>${info}</div></div>`, buttons});
+}
+function onTile(t) {
+  const S = UI.S;
+  if (myTurn() && S.pending) {
+    const k = S.pending.opts.findIndex(o => o.tile === t);
+    if (k >= 0) commit({t: 'choose', i: k}, true);
+    return;
+  }
+  const T = TILES[t], main = myTurn() && !S.mainDone, p = main ? S.active : viewer(), c = Engine.tileCost(S, p, t);
+  const a = main && Engine.legalActions(S).find(x => x.t === 'tile' && x.tile === t);
+  const irr = a && Engine.apply(S, a).irrev;
+  modal({title: T.name, body: `<p>${esc(TILE_TEXT[t])}</p><p>Skills: ${skillStr(T.skills.split(' '))}</p>
+    <p class="muted">Cost for you: ${c.coins} Coin${c.coins === 1 ? '' : 's'} (${c.missing} missing Skills + ${c.fee} for your Fortresses on the board). You have ${S.players[p].coins}.</p>
+    ${t === 'grond' && !REGION_IDS.some(r => S.board[r].f[opp(p)]) ? '<p class="muted">Needs an enemy Fortress on the board.</p>' : ''}${S.tileLocks.includes(t) ? '<p class="muted">Locked by the Uruk-Hai Chief for the Fellowship.</p>' : ''}`,
+    buttons: a ? [{label: `Build (${c.coins}\u25CF)${irr ? ' \u{1F512}' : ''}`, cls: 'primary', fn: () => commit(a, true)}] : []});
+}
+function onRegion(r) {
+  const S = UI.S;
+  if (!myTurn() || !S.pending) return;
+  const pd = S.pending;
+  if (pd.type === 'move') {
+    if (!UI.sel) { if (pd.opts.some(o => o.from === r)) { UI.sel = r; renderGame(); } return; }
+    if (r === UI.sel) { UI.sel = null; renderGame(); return; }
+    const k = pd.opts.findIndex(o => o.from === UI.sel && o.to === r);
+    if (k >= 0) commit({t: 'choose', i: k}, true);
+    return;
+  }
+  if (pd.type === 'units2') {
+    if (!UI.sel) { UI.sel = r; renderGame(); return; }
+    const k = pd.opts.findIndex(o => o.regions && o.regions.includes(UI.sel) && o.regions.includes(r) && (r !== UI.sel || o.regions[0] === o.regions[1]));
+    if (k >= 0) commit({t: 'choose', i: k}, true);
+    return;
+  }
+  const k = pd.opts.findIndex(o => o.region === r);
+  if (k >= 0) commit({t: 'choose', i: k}, true);
+}
+function onAlly(a, mode) {
+  const S = UI.S;
+  const act = Engine.legalActions(S).find(x => x.t === 'ally' && x.a === a && x.mode === mode);
+  if (!act || !myTurn()) return;
+  const al = ALLIES[a];
+  modal({title: al.name, body: `<p>${mode === 'enter' ? 'Enter' : 'Exit'}: ${esc(mode === 'enter' ? al.et : al.xt)}</p><p class="muted">Costs ${mode === 'enter' ? 1 : 2} Power. Allies cannot be undone.</p>`,
+    buttons: [{label: mode === 'enter' ? 'Call (1\u26A1) \u{1F512}' : 'Send away (2\u26A1) \u{1F512}', cls: 'primary', fn: () => commit(act, true)}]});
+}
+
+// ---------- popups ----------
+function showDiscard() {
+  const S = UI.S, v = viewer();
+  const vis = S.discard.filter(d => !d.hidden || d.seen[v]), hid = S.discard.length - vis.length;
+  modal({title: `Discard (${S.discard.length})`, body: `<div class="minis">${vis.map(d => cardSVGfull(d.id, 70)).join('') || '<p class="muted">No visible cards.</p>'}</div>
+    <p class="muted">${hid} facedown card${hid === 1 ? '' : 's'} set aside at chapter setup (3 per chapter). Barad-D\u00fbr, the Wizards token and Arwen can reach them.</p>`});
+}
+function showMenu() {
+  modal({title: 'Menu', body: `<label class="check"><input type="checkbox" id="m-anim" ${UI.anim ? 'checked' : ''}> Animations</label>
+    <label class="check"><input type="checkbox" id="m-mute" ${UI.mute ? '' : 'checked'}> Sound</label>
+    <p class="muted">Seed ${UI.S.seed} \u00B7 Fan tiles ${UI.S.opts.fan ? 'on' : 'off'} \u00B7 Allies ${UI.S.opts.allies ? 'on' : 'off'}</p>`,
+  buttons: [{label: 'Main menu', fn: () => landing()}, {label: 'Changelog', fn: showChangelog}, {label: 'Results so far', fn: () => {
+    const R = Engine.result(UI.S); modal({title: 'Current standing', body: `<table class="res"><tr><th></th>${R.rows.map(r => `<th>${esc(r.name)}</th>`).join('')}</tr>${['regions', 'races', 'quest', 'coins', 'cards', 'landmarks'].map(k => `<tr><td>${k}</td>${R.rows.map(r => `<td>${r[k]}</td>`).join('')}</tr>`).join('')}</table>`});
+  }}]});
+  $('#m-anim').onchange = e => { UI.anim = e.target.checked; store.set('anim', UI.anim); renderGame(); };
+  $('#m-mute').onchange = e => { UI.mute = !e.target.checked; store.set('mute', UI.mute); renderGame(); };
+}
+function showChangelog() {
+  modal({title: `LOTR Duel v${APP_VERSION}`, body: CHANGELOG.map(c => `<h3>v${c.v} <small class="muted">${c.date}</small></h3><ul>${c.items.map(i => `<li>${esc(i)}</li>`).join('')}</ul>`).join('')});
+}
+function showHelp() {
+  modal({title: 'How to play', body: `
+    <p>Two players: the <b class="fel">Fellowship</b> and <b class="sau">Sauron</b>. Sauron starts. Over 3 chapters, take turns taking one action:</p>
+    <ul><li><b>Take a card</b> that no other card covers. <b>Play</b> it by paying its Skills (each missing Skill costs 1 Coin) plus any printed Coins, or for free if you own its chain symbol (\u{1F517}). Or <b>discard</b> it for Coins equal to the chapter number.</li>
+    <li><b>Build a Landmark</b>: pay its Skills plus 1 Coin per Fortress you already have on the board. Place a Fortress in its region and apply its effect.</li></ul>
+    <p>Card colours: <span class="cc" style="background:${CFILL.grey}"></span>Skills, <span class="cc" style="background:${CFILL.yellow}"></span>Coins, <span class="cc" style="background:${CFILL.blue}"></span>Quest, <span class="cc" style="background:${CFILL.green}"></span>Races (2 matching or 3 different Races give Alliance tokens), <span class="cc" style="background:${CFILL.red}"></span>Units in one of two regions, <span class="cc" style="background:${CFILL.purple}"></span>Chapter 3 tactics.</p>
+    <p>Units of both sides in the same region fight 1 for 1. Quest spaces 3, 6, 9, 12 give a Coin, a Unit, another turn and the removal of an enemy Fortress.</p>
+    <p><b>Win at once</b> by reaching the end of the Quest (14 spaces), by gathering 6 different Race symbols, or by being present in all 7 regions. Otherwise, after chapter 3 the side present in more regions wins.</p>
+    <p>Skills: ${SKILLS.map(k => `${SKILL_ICON[k]} ${SKILL_NAMES[k]}`).join(' \u00B7 ')}. Races: ${RACES.map(r => `${RACE_ICON[r]} ${RACE_NAMES[r]}`).join(' \u00B7 ')}.</p>
+    <p class="muted">\u{1F512} on a button: that action reveals hidden information and cannot be undone.</p>
+    <p><a href="${RULES_URL}" target="_blank" rel="noopener">Official game page and rules</a></p>`});
+}
+
+// ---------- save, stats ----------
+function save() { if (!UI.auto && UI.S && !Q.has('test')) store.set('save', {S: UI.S, viewer: UI.viewer}); }
+function recordStats(S) {
+  if (UI.auto || !humans().length) return;
+  const st = store.get('stats', {games: 0, byLevel: {}, bySide: {}, reasons: {}, pnp: 0});
+  st.games++;
+  st.reasons[S.winner.reason] = (st.reasons[S.winner.reason] || 0) + 1;
+  if (pnp()) st.pnp++;
+  else {
+    const h = humans()[0], ai = seat(opp(h)).level, L = st.byLevel[ai] || (st.byLevel[ai] = {w: 0, l: 0, t: 0});
+    const r = S.winner.p === 'tie' ? 't' : S.winner.p === h ? 'w' : 'l'; L[r]++;
+    const sd = st.bySide[SIDES[h]] || (st.bySide[SIDES[h]] = {w: 0, l: 0, t: 0}); sd[r]++;
+  }
+  store.set('stats', st);
+}
+function showStats() {
+  const st = store.get('stats', {games: 0, byLevel: {}, bySide: {}, reasons: {}, pnp: 0});
+  const wlt = o => o ? `${o.w} won \u00B7 ${o.l} lost \u00B7 ${o.t} shared` : '\u2014';
+  modal({title: 'Statistics', body: `<p>${st.games} game${st.games === 1 ? '' : 's'} finished (${st.pnp} pass and play).</p>
+    <table class="res">${['easy', 'normal', 'hard'].map(l => `<tr><td>vs AI ${l}</td><td>${wlt(st.byLevel[l])}</td></tr>`).join('')}
+    ${SIDES.map(s => `<tr><td>as ${SIDE_NAMES[s]}</td><td>${wlt(st.bySide[s])}</td></tr>`).join('')}</table>
+    <p class="muted">Victories by type: ${Object.entries(st.reasons).map(([k, v]) => `${REASONS[k]} ${v}`).join(', ') || '\u2014'}</p><p class="muted">Stored only in this browser.</p>`,
+    buttons: [{label: 'Reset', fn: () => { store.del('stats'); showStats(); }}]});
+}
+
+// ---------- landing ----------
+function landing() {
+  clearTimeout(UI.timer); UI.gen++; closeModal();
+  document.querySelectorAll('.pass').forEach(x => x.remove());
+  const o = UI.setup || store.get('setup', {side: 'fellowship', opp: 'normal', fan: true, allies: false});
+  UI.setup = o;
+  const sv = store.get('save', null), canCont = sv && sv.S && !sv.S.winner;
+  const seg = (k, vals) => `<div class="seg">${vals.map(([v, l]) => `<button class="${o[k] === v ? 'on' : ''}" data-set="${k}" data-v="${v}">${l}</button>`).join('')}</div>`;
+  $('#app').innerHTML = `<div class="landing"><div class="art" role="img" aria-label="Illustration: a golden ring before Mount Doom at sunset"></div><div class="box">
+    <h1>The Lord of the Rings</h1><div class="sub">Duel for Middle-earth \u00B7 unofficial fan version</div>
+    <div class="field"><label>Play as</label>${seg('side', [['fellowship', 'Fellowship'], ['sauron', 'Sauron'], ['random', 'Random']])}</div>
+    <div class="field"><label>Opponent</label>${seg('opp', [['easy', 'AI Easy'], ['normal', 'AI Normal'], ['hard', 'AI Hard'], ['pnp', 'Pass and play']])}</div>
+    <div class="field"><label class="check"><input type="checkbox" id="o-fan" ${o.fan ? 'checked' : ''}> Fan Landmarks: The Shire and Grond</label>
+      <label class="check"><input type="checkbox" id="o-allies" ${o.allies ? 'checked' : ''}> Allies expansion</label></div>
+    <div class="row"><button class="primary" id="go">New game</button>${canCont ? '<button id="cont">Continue</button>' : ''}</div>
+    <div class="row" style="margin-top:8px"><button id="howto">How to play</button><button id="stats">Statistics</button></div>
+    <div class="foot"><a href="${RULES_URL}" target="_blank" rel="noopener">Official rules</a> \u00B7 <a id="ver">v${APP_VERSION}</a></div></div></div>`;
+  document.querySelectorAll('[data-set]').forEach(b => b.onclick = () => { o[b.dataset.set] = b.dataset.v; store.set('setup', o); landing(); });
+  $('#o-fan').onchange = e => { o.fan = e.target.checked; store.set('setup', o); };
+  $('#o-allies').onchange = e => { o.allies = e.target.checked; store.set('setup', o); };
+  $('#go').onclick = () => startGame(o);
+  if (canCont) $('#cont').onclick = () => { UI.S = sv.S; UI.viewer = sv.viewer || 0; UI.undo = []; UI.gen++; renderGame(); next(); };
+  $('#howto').onclick = showHelp; $('#stats').onclick = showStats; $('#ver').onclick = showChangelog;
+}
+function startGame(o, seed) {
+  const side = o.side === 'random' ? (Math.random() < .5 ? 'fellowship' : 'sauron') : o.side;
+  const h = SIDES.indexOf(side);
+  const seats = [0, 1].map(p => o.opp === 'pnp' || p === h ? {name: SIDE_NAMES[SIDES[p]], type: 'human', level: 'normal'} : {name: SIDE_NAMES[SIDES[p]], type: 'ai', level: o.opp});
+  if (o.opp !== 'pnp') seats[h].name = 'You';
+  UI.S = Engine.newGame({seed: seed ?? (Q.has('seed') ? +Q.get('seed') : undefined), fan: o.fan, allies: o.allies, seats});
+  UI.undo = []; UI.gen++; UI.sel = null; UI.view = 'cards'; UI.tab = 'players'; UI.zoom = {};
+  UI.viewer = o.opp === 'pnp' ? -1 : h;
+  save(); renderGame(); next();
+}
+
+// ---------- ?test, ?selfplay, ?freeze ----------
+function runTests() {
+  const r = Tests.run();
+  document.title = `TESTS ${r.pass}/${r.total}`;
+  $('#app').innerHTML = `<div class="testlist"><h2>TESTS ${r.pass}/${r.total}</h2>${r.res.map(x => `<div class="${x.ok ? 'p' : 'f'}">${x.ok ? '\u2713' : '\u2717'} ${esc(x.name)}${x.ok ? '' : '\n   ' + esc(x.err)}</div>`).join('')}</div>`;
+}
+function runSelfplay() {
+  const levels = (Q.get('levels') || 'normal,normal').split(','), n = +(Q.get('n') || 1), seed0 = +(Q.get('seed') || 1000);
+  const fan = Q.get('fan') !== '0', allies = Q.get('allies') === '1', budget = +(Q.get('budget') || 400), pass = Q.get('pnp') === '1';
+  const tally = {fellowship: 0, sauron: 0, tie: 0};
+  let steps = 0, last = '';
+  UI.auto = true;
+  try {
+    for (let g = 0; g < n; g++) {
+      const seats = [0, 1].map(p => ({name: SIDE_NAMES[SIDES[p]], type: pass || p === 0 ? 'human' : 'ai', level: levels[p] || 'normal'}));
+      UI.S = Engine.newGame({seed: seed0 + g, fan, allies, seats}); UI.undo = []; UI.viewer = 0;
+      let k = 0;
+      while (!UI.S.winner) {
+        if (++k > 3000) throw new Error('stalled at seed ' + (seed0 + g));
+        const p = actor(UI.S);
+        if (pass && UI.viewer !== p) UI.viewer = p;
+        const a = AI.decide(UI.S, seat(p).level, {budget});
+        const legal = Engine.legalActions(UI.S);
+        if (!legal.some(x => JSON.stringify(x) === JSON.stringify(a))) throw new Error('illegal AI action ' + JSON.stringify(a));
+        commit(a, isHuman(p));
+        if (k % 7 === 0) renderGame();
+      }
+      steps += k;
+      const w = UI.S.winner; tally[w.p === 'tie' ? 'tie' : SIDES[w.p]]++;
+      last = `${w.p === 'tie' ? 'tie' : SIDES[w.p]} ${w.reason}`;
+    }
+    UI.auto = false; renderGame();
+    document.title = n === 1 ? `SELFPLAY DONE ${last} in ${steps} steps` : `SELFPLAY DONE ${n} games F${tally.fellowship}/S${tally.sauron}/T${tally.tie} in ${steps} steps`;
+  } catch (e) {
+    UI.auto = false;
+    document.title = `SELFPLAY ERROR ${e.message}`;
+    $('#app').insertAdjacentHTML('afterbegin', `<pre class="testlist f">${esc(e.stack || e)}</pre>`);
+  }
+}
+function runFreeze() {
+  const o = {side: Q.get('side') || 'fellowship', opp: Q.get('opp') || 'normal', fan: Q.get('fan') !== '0', allies: Q.get('allies') === '1'};
+  startGame(o, +(Q.get('seed') || 7));
+  clearTimeout(UI.timer);
+  const turns = +(Q.get('turns') || 0);
+  UI.auto = true;
+  for (let k = 0; k < turns && !UI.S.winner; k++) { const p = actor(UI.S); commit(AI.decide(UI.S, 'easy'), false); }
+  // Hand the move back to the human seat if possible so the screenshot shows the action bar.
+  let g = 0;
+  const wantPending = Q.get('until') === 'pending';
+  while (!UI.S.winner && g++ < 400 && (!isHuman(actor(UI.S)) || (wantPending && !(UI.S.pending && UI.S.pending.opts.some(o => o.region || o.from)))))
+    commit(AI.decide(UI.S, 'easy'), false);
+  UI.auto = false;
+  if (Q.get('tab')) UI.tab = Q.get('tab');
+  if (Q.get('view')) UI.view = Q.get('view');
+  autoView(); renderGame();
+  const pop = Q.get('popup');
+  if (pop === 'help') showHelp();
+  if (pop === 'card') { const i = Engine.availableSlots(UI.S).find(k => UI.S.slots[k].face); if (i !== undefined) onSlot(i); }
+  if (pop === 'menu') showMenu();
+  document.title = `FROZEN turn ${UI.S.turnNo}`;
+}
+
+function boot() {
+  if (Q.has('test')) return runTests();
+  if (Q.has('selfplay')) return runSelfplay();
+  if (UI.freeze) return runFreeze();
+  landing();
+  if (location.protocol.startsWith('http') && 'serviceWorker' in navigator && document.querySelector('link[rel="manifest"]'))
+    navigator.serviceWorker.register('sw.js').catch(() => {});
+}
+boot();
+
+</script>
+</body>
+</html>
