@@ -132,6 +132,12 @@ svg.quest { width: 100%; max-height: 170px; height: auto; display: block; flex: 
 .region.target > circle.rc { stroke: #ffde59; stroke-width: 9; animation: pulse 1.2s ease-in-out infinite; }
 .region.sel > circle.rc { stroke: #fff; stroke-width: 10; }
 .region.flash > circle.rc { animation: flash .9s ease-out 1; }
+.region.onart > rect.rb { fill: rgba(255,255,255,0); stroke: transparent; stroke-width: 6; }
+.region.onart:hover > rect.rb { fill: rgba(255,250,235,.12); stroke: rgba(255,250,235,.75); }
+.region.onart.target > rect.rb { fill: rgba(255,222,89,.2); stroke: #ffde59; stroke-width: 8; animation: pulse 1.2s ease-in-out infinite; }
+.region.onart.target:hover > rect.rb { fill: rgba(255,222,89,.34); }
+.region.onart.sel > rect.rb { fill: rgba(255,255,255,.22); stroke: #fff; stroke-width: 10; }
+.region.onart.flash > rect.rb { animation: flash .9s ease-out 1; }
 @keyframes pulse { 50% { stroke-opacity: .35; } }
 @keyframes flash { 0% { stroke: #fff; stroke-width: 18; } 100% { stroke-width: 3; } }
 .noanim *, .noanim *::before { animation: none !important; transition: none !important; }
@@ -268,6 +274,13 @@ const EDGES = [
   ['lindon', 'arnor'], ['arnor', 'rhovanion'], ['arnor', 'enedwaith'], ['enedwaith', 'rhovanion'], ['enedwaith', 'rohan'],
   ['enedwaith', 'gondor'], ['rhovanion', 'rohan'], ['rohan', 'gondor'], ['rohan', 'mordor'], ['gondor', 'mordor'],
 ];
+// Board photo (art 'B:board', 1000 x 714 viewBox): centre of each region's name box, the banner+box outline
+// relative to it, and the midpoint of each printed connection line (same order as EDGES).
+const BOARD = {
+  w: 1000, h: 714, box: {dx: -128, dy: -70, w: 204, h: 150},
+  at: {lindon: [167, 179], arnor: [445, 120], rhovanion: [810, 180], enedwaith: [393, 385], rohan: [672, 407], gondor: [552, 591], mordor: [894, 566]},
+  edges: [[282, 148], [603, 147], [402, 252], [577, 285], [507, 402], [457, 488], [731, 295], [607, 500], [818, 461], [698, 581]],
+};
 
 const QUEST_LEN = 14;
 const QUEST_BONUS = {3: 'coin', 6: 'unit', 9: 'turn', 12: 'fortress'};
@@ -478,8 +491,12 @@ const ALLIES = {
 const SETS = {base: 'Base game', fan: 'Fan tiles: The Shire and Grond', allies: 'Allies expansion'};
 
 // ===== Rules engine: state in, legal actions and new state out. No DOM access. =====
-const APP_VERSION = '0.4';
+const APP_VERSION = '0.5';
 const CHANGELOG = [
+  {v: '0.5', date: '2026-10-30', items: [
+    'Real art for the Middle-earth board: with photo art on, the map is the real board, with Units, Fortresses and Balrog markers on each region\'s name box and outlined targets.',
+    'The landing page uses the original ring-and-Mount-Doom illustration in every version (no box art).',
+  ]},
   {v: '0.4', date: '2026-10-30', items: [
     'Real art for the Landmark tiles (including The Shire and Grond) and the Allies, in tiles, player panels and popups.',
     'Private art link: the web version shows all the real art when opened from the owner\'s private link (remembered on that device); without it, the drawn cards remain.',
@@ -2029,6 +2046,7 @@ function mapSVG() {
     else if (pend.type === 'units2') targ = new Set(REGION_IDS);
     else targ = new Set(pend.opts.filter(o => o.region).map(o => o.region));
   }
+  if (art('B:board')) return boardArtSVG(targ);
   let s = `<defs><radialGradient id="sea" cx="50%" cy="45%" r="70%"><stop offset="0" stop-color="#f4ead0"/><stop offset="1" stop-color="#d9c493"/></radialGradient></defs>
     <rect x="0" y="0" width="1000" height="700" fill="url(#sea)"/>
     <path d="M0 0 L60 0 Q30 200 70 360 Q20 520 50 700 L0 700 Z" fill="#a9c4d6" opacity=".7"/>
@@ -2059,6 +2077,34 @@ function mapSVG() {
     s += `</g>`;
   }
   return `<svg viewBox="0 0 1000 700" preserveAspectRatio="xMidYMid meet" xmlns="http://www.w3.org/2000/svg">${s}</svg>`;
+}
+// The board photo already shows regions and paths; draw only outlines, pieces and markers, in BOARD coordinates.
+function boardArtSVG(targ) {
+  const S = UI.S, B = BOARD.box;
+  let s = `<defs><filter id="bsh" x="-30%" y="-30%" width="160%" height="160%"><feDropShadow dx="0" dy="2" stdDeviation="2.2" flood-color="#000" flood-opacity=".7"/></filter></defs>
+    <image href="${ART['B:board']}" width="${BOARD.w}" height="${BOARD.h}" preserveAspectRatio="none"/>`;
+  EDGES.forEach(([a, b], i) => {
+    const [mx, my] = BOARD.edges[i];
+    for (const bl of S.blocked.filter(z => z.e === i))
+      s += `<g filter="url(#bsh)"><circle cx="${mx}" cy="${my}" r="19" fill="${SIDE_COL[bl.vs]}" stroke="#fff" stroke-width="3"/><text x="${mx}" y="${my + 7}" font-size="20" text-anchor="middle">\u{1F525}</text></g>`;
+    if (UI.debug) s += `<text x="${mx}" y="${my - 20}" font-size="14" fill="#060" stroke="#fff" stroke-width=".5" text-anchor="middle">e${i}</text>`;
+  });
+  for (const R of REGIONS) {
+    const b = S.board[R.id], [x, y] = BOARD.at[R.id];
+    const cls = ['region', 'onart', targ.has(R.id) ? 'target' : '', UI.sel === R.id ? 'sel' : '', UI.flash.has(R.id) && UI.anim ? 'flash' : ''].join(' ');
+    s += `<g class="${cls}" data-a="region" data-r="${R.id}" aria-label="${R.name}">
+      <rect class="rb" x="${x + B.dx}" y="${y + B.dy}" width="${B.w}" height="${B.h}" rx="10"/><g filter="url(#bsh)">`;
+    for (const p of [0, 1]) {
+      const ux = x + (p ? 46 : -46), uy = y + 24;
+      if (b.u[p]) s += `<circle cx="${ux}" cy="${uy}" r="25" fill="${SIDE_COL[p]}" stroke="#fff" stroke-width="3.5"/><text x="${ux}" y="${uy + 10}" font-size="28" text-anchor="middle" fill="#fff" font-weight="700">${b.u[p]}</text>`;
+      if (b.f[p]) s += towerPath(x + (p ? 46 : -46), y - 26, 1.75, SIDE_COL[p]).replace('stroke="#1d150c" stroke-width="1.2"', 'stroke="#fff" stroke-width="1.4"')
+        + (b.f[p] > 1 ? `<text x="${x + (p ? 76 : -76)}" y="${y - 16}" font-size="19" text-anchor="middle" fill="#fff" stroke="#1d150c" stroke-width="3" paint-order="stroke" font-weight="700">\u00D7${b.f[p]}</text>` : '');
+    }
+    s += `</g>`;
+    if (UI.debug || UI.edit) s += `<text x="${x}" y="${y + B.dy + B.h + 16}" font-size="14" text-anchor="middle" fill="#060" stroke="#fff" stroke-width=".5">${R.id} (${x},${y})</text>`;
+    s += `</g>`;
+  }
+  return `<svg class="boardart" viewBox="0 0 ${BOARD.w} ${BOARD.h}" preserveAspectRatio="xMidYMid meet" xmlns="http://www.w3.org/2000/svg">${s}</svg>`;
 }
 function questSVG() {
   const S = UI.S, X = i => 22 + i * 41;
@@ -2224,7 +2270,7 @@ function renderGame() {
 function debugHTML() {
   const S = UI.S;
   return `<div class="dbg">seed ${S.seed} \u00B7 turn ${S.turnNo} \u00B7 active ${S.active} \u00B7 ch ${S.chapter}<br>pending ${S.pending ? S.pending.type + ' p' + S.pending.p : '-'} \u00B7 queue ${S.queue.length} \u00B7 extra ${S.extra} \u00B7 irrev ${S.irrev}
-    <br>tiles deck: ${S.tilesDeck.join(', ')}<br><button data-a="dump">Dump state</button>${UI.edit ? `<textarea readonly>${REGIONS.map(r => `{id: '${r.id}', x: ${r.x}, y: ${r.y}}`).join('\n')}</textarea>` : ''}</div>`;
+    <br>tiles deck: ${S.tilesDeck.join(', ')}<br><button data-a="dump">Dump state</button>${UI.edit ? `<textarea readonly>${art('B:board') ? REGIONS.map(r => `${r.id}: [${BOARD.at[r.id]}]`).join(',\n') : REGIONS.map(r => `{id: '${r.id}', x: ${r.x}, y: ${r.y}}`).join('\n')}</textarea>` : ''}</div>`;
 }
 
 // ---------- zoom (pinch, wheel, drag) ----------
@@ -2250,7 +2296,9 @@ document.addEventListener('pointermove', e => {
   if (UI.drag) {
     const svg = UI.drag.el.querySelector('svg'), pt = svg.createSVGPoint(); pt.x = e.clientX; pt.y = e.clientY;
     const q = pt.matrixTransform(svg.getScreenCTM().inverse()), R = REGIONS.find(r => r.id === UI.drag.r);
-    R.x = Math.round(q.x / 5) * 5; R.y = Math.round(q.y / 5) * 5; renderGame(); return;
+    const nx = Math.round(q.x / 5) * 5, ny = Math.round(q.y / 5) * 5;
+    if (art('B:board')) BOARD.at[R.id] = [nx, ny]; else { R.x = nx; R.y = ny; }
+    renderGame(); return;
   }
   const p = ptrs.get(e.pointerId); if (!p) return;
   const el = p.el, z = zoomOf(el), r = el.getBoundingClientRect();
@@ -2460,7 +2508,7 @@ function showDiscard() {
 function showMenu() {
   modal({title: 'Menu', body: `<label class="check"><input type="checkbox" id="m-anim" ${UI.anim ? 'checked' : ''}> Animations</label>
     <label class="check"><input type="checkbox" id="m-mute" ${UI.mute ? '' : 'checked'}> Sound</label>
-    ${hasArt() ? `<label class="check"><input type="checkbox" id="m-art" ${UI.art ? 'checked' : ''}> Card art (off: clear icons)</label>` : ''}
+    ${hasArt() ? `<label class="check"><input type="checkbox" id="m-art" ${UI.art ? 'checked' : ''}> Photo art: cards and board (off: clear icons)</label>` : ''}
     <p class="muted">Seed ${UI.S.seed} \u00B7 Fan tiles ${UI.S.opts.fan ? 'on' : 'off'} \u00B7 Allies ${UI.S.opts.allies ? 'on' : 'off'}</p>
     <p class="muted">LOTR Duel v${APP_VERSION}</p>`,
   buttons: [{label: 'Main menu', fn: () => landing()}, {label: "What's new", fn: showChangelog},
