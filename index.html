@@ -87,6 +87,27 @@ a { color: #6a3e12; }
 @keyframes mrspin { to { transform: rotate(360deg); } }
 .noanim .mring .mrrun { animation: none; }
 @media (prefers-reduced-motion: reduce) { .mring .mrrun { animation: none; } }
+.tpills { display: flex; gap: 6px; align-items: center; min-width: 0; overflow: hidden; }
+.top .tpill { display: inline-flex; align-items: center; gap: 5px; padding: 3px 10px; min-height: 30px; border-radius: 999px; background: rgba(255,255,255,.07); border: 1px solid rgba(255,245,220,.18); color: #fff5dc; font-size: 13px; white-space: nowrap; line-height: 1.1; }
+.top button.tpill:hover { background: rgba(255,255,255,.14); }
+.tpill small { opacity: .7; font-size: 11px; }
+.tpill .sep { width: 1px; height: 14px; background: rgba(255,245,220,.25); margin: 0 2px; }
+.tpill .muted2 { opacity: .6; }
+.tpill.turn { border-color: var(--c); box-shadow: inset 0 0 0 1px var(--c); font-weight: 700; }
+.tpill.turn i { width: 8px; height: 8px; border-radius: 50%; background: var(--c); box-shadow: 0 0 6px var(--c); animation: tpulse 1.6s ease-in-out infinite; }
+.tpill.turn small { font-weight: 400; margin-left: 2px; }
+.tpill.turn.won { background: linear-gradient(90deg, rgba(224,184,80,.35), rgba(224,184,80,.1)); }
+.tpill.ch b { font-family: Georgia, serif; }
+.chbar { width: 46px; height: 5px; border-radius: 3px; background: rgba(255,255,255,.15); overflow: hidden; }
+.chbar i { display: block; height: 100%; background: linear-gradient(90deg, var(--gold), var(--gold2)); }
+@keyframes tpulse { 50% { opacity: .35; } }
+.noanim .tpill.turn i { animation: none; }
+.top .tpills { flex: 0 1 auto; }
+@media (max-width: 1549px) { .tpill.skills { display: none; } }
+@media (max-width: 1399px) { .tpill.turn small, .tpill.ch > small { display: none; } }
+@media (max-width: 1279px) { .tpills > button.tpill { display: none; } }
+@media (max-width: 1023px) { .tpill.ch { display: none; } }
+@media (max-width: 899px) { .top .tpills { display: none; } }
 .top .title { font-family: Georgia, serif; font-weight: 700; white-space: nowrap; }
 .top .spacer { flex: 1; }
 .pills { display: flex; gap: 6px; flex-wrap: wrap; align-items: center; }
@@ -287,7 +308,7 @@ table.res th:first-child, table.res td:first-child { text-align: left; }
 
 /* ---------- phone: one view at a time, bottom sheet ---------- */
 @media (max-width: 759px) {
-  .top .title, .top .chpill, .top [data-a="help"] { display: none; }
+  .top .title, .top .tpills, .top [data-a="help"] { display: none; }
   .pill { font-size: 12px; padding: 1px 6px; }
   .top { gap: 4px; }
   .top .vt { gap: 6px; padding: 2px 4px; }
@@ -2453,9 +2474,21 @@ function renderGame() {
   const tracker = `<button class="vt" data-a="explain" data-k="victory" title="Three ways to win: tap for details">${track('\u{1F48D}', 'Quest', 14, p => S.players[p].quest)}${track('\u{1F9DD}', 'Races', 6, p => Engine.distinctRaces(S.players[p]))}${track('\u{1F5FA}\uFE0F', 'Regions', 7, p => Engine.regionCount(S, p))}</button>`;
   const coin = (p, big) => `<span class="coinchip ${big ? 'big' : ''} ${S.active === p && !S.winner ? 'active' : ''}" title="${esc(pname(S, p))}: ${S.players[p].coins} Coins"><svg width="${big ? 22 : 16}" height="${big ? 22 : 16}" viewBox="-10 -10 20 20">${coinSVG(0, 0, '', 9)}</svg><b>${S.players[p].coins}</b><small>${humans().length === 1 && isHuman(p) ? 'You' : esc(pname(S, p)).slice(0, 9)}</small></span>`;
   const disc = S.discard.length;
+  const duo = f => `<b style="color:${SIDE_COL[me]}">${f(me)}</b>\u00B7<b style="color:${SIDE_COL[them]}">${f(them)}</b>`;
+  const left = S.slots.filter(s => !s.taken).length, total = S.slots.length || 1;
+  const turnTxt = S.winner ? (S.winner.p === 'tie' ? '\u{1F91D} Tie' : `\u{1F3C6} ${esc(pname(S, S.winner.p))} wins`)
+    : isHuman(S.active) && humans().length === 1 ? 'Your turn' : `${esc(pname(S, S.active))}${seat(S.active).type === 'ai' ? ' thinking\u2026' : '\u2019s turn'}`;
+  const myT = skillTotals(S.players[me]).t;
+  const pills = `<span class="tpills">
+    <span class="tpill turn ${S.winner ? 'won' : ''}" style="--c:${S.winner && S.winner.p !== 'tie' ? SIDE_COL[S.winner.p] : SIDE_COL[S.active]}" title="Turn ${S.turnNo}"><i></i>${turnTxt}<small>Turn ${S.turnNo}</small></span>
+    <span class="tpill ch" title="Chapter ${S.chapter} of 3: ${left} of ${total} cards left in this chapter"><b>Ch ${S.chapter}<small>/3</small></b><span class="chbar"><i style="width:${(total - left) / total * 100}%"></i></span><small>${left} left</small></span>
+    <button class="tpill" data-a="explain" data-k="forts" title="Units and Fortresses still in supply (you \u00B7 rival)">\u2694\uFE0F ${duo(p => S.players[p].units)}<span class="sep"></span>\u{1F3F0} ${duo(p => S.players[p].forts)}</button>
+    ${S.opts.allies ? `<button class="tpill" data-a="explain" data-k="allies" title="Power for Allies (you \u00B7 rival)">\u26A1 ${duo(p => S.players[p].power)}</button>` : ''}
+    <span class="tpill skills" title="Your Skills">${SKILLS.map(k => myT[k] ? `${SKILL_ICON[k]}${myT[k]}` : '').filter(Boolean).join(' ') || '<span class="muted2">No Skills yet</span>'}</span>
+  </span>`;
   app.innerHTML = `<div id="game" class="${UI.anim ? '' : 'noanim'}">
     <div class="top"><button data-a="menu" class="menubtn" title="Menu" aria-label="Menu">${MENU_ICON}</button><span class="title">LOTR Duel</span>
-      <span class="pill chpill">Ch ${S.chapter}</span>${tracker}${coin(me, true)}${coin(them, false)}<span class="spacer"></span>
+      ${tracker}${coin(me, true)}${coin(them, false)}${pills}<span class="spacer"></span>
       <button data-a="discard" title="Discard pile">\u{1F5D1} ${disc}</button><button data-a="mute" title="Sound">${UI.mute ? '\u{1F507}' : '\u{1F50A}'}</button><button data-a="help" title="How to play">?</button></div>
     <div class="main show-${UI.view}">
       <div class="tabsbar"><button class="${UI.view === 'cards' ? 'on' : ''}" data-a="view" data-v="cards">Cards &amp; Landmarks</button><button class="${UI.view === 'map' ? 'on' : ''}" data-a="view" data-v="map">Middle-earth</button></div>
