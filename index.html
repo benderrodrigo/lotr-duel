@@ -207,6 +207,85 @@ svg.quest { width: 100%; max-height: 170px; height: auto; display: block; flex: 
 .log li.p0 { border-left: 3px solid var(--fel); padding-left: 6px; }
 .log li.p1 { border-left: 3px solid var(--sau); padding-left: 6px; }
 .log li.chapter, .log li.win { font-weight: 700; }
+.log li.jr { cursor: pointer; }
+.log li.jr:hover { background: rgba(184,137,44,.12); }
+.jrpin { font-size: 11px; opacity: .7; }
+.jrhl { filter: drop-shadow(0 0 6px #ffd54a) drop-shadow(0 0 14px #ffb300); }
+
+/* move preview tooltip and keyboard cursor */
+.tip { position: fixed; z-index: 75; max-width: 300px; background: #2a2016; color: #fff5dc; border: 1px solid var(--gold); border-radius: 10px;
+  padding: 7px 10px; font-size: 13px; line-height: 1.35; pointer-events: none; box-shadow: 0 6px 18px rgba(0,0,0,.35); }
+.tip b { color: #f3d27a; }
+.tip .muted { color: #cdbb98; }
+.tip .bad { color: #ff9a8a; }
+.tip > div { margin-top: 2px; }
+.kcur { filter: drop-shadow(0 0 3px #fff) drop-shadow(0 0 7px #2f8cff) !important; outline: 3px solid #2f8cff; outline-offset: 2px; }
+svg .kcur { outline: none; }
+
+/* end of game reveal */
+.vbanner { display: flex; gap: 12px; align-items: center; padding: 12px 14px; border-radius: 12px; color: #fff5dc;
+  background: linear-gradient(110deg, #2a2016 0%, color-mix(in srgb, var(--c) 70%, #2a2016) 100%); border: 2px solid var(--c); box-shadow: 0 0 22px color-mix(in srgb, var(--c) 45%, transparent); }
+.vb1 { font-size: 40px; line-height: 1; }
+.vb2 { font: 700 26px Georgia, serif; }
+.vb3 { opacity: .85; font-size: 14px; }
+.reveal .vbanner { animation: vbin .7s cubic-bezier(.2,1.4,.4,1) both; }
+@keyframes vbin { from { transform: scale(.6); opacity: 0; } }
+.rvts { display: grid; gap: 8px; margin: 12px 0 6px; }
+.rvt { padding: 6px 8px; border-radius: 10px; border: 1px solid var(--line); background: rgba(255,255,255,.35); }
+.rvt.win { border-color: var(--gold); box-shadow: 0 0 0 2px var(--gold2), 0 0 14px rgba(224,184,80,.7); }
+.rvl { font-weight: 700; font-size: 14px; margin-bottom: 3px; }
+.rvr { display: grid; grid-template-columns: 78px 1fr 46px; gap: 8px; align-items: center; font-size: 13px; }
+.rvr b { text-align: right; } .rvr small { opacity: .6; }
+.rvb { height: 10px; border-radius: 5px; background: rgba(61,47,31,.15); overflow: hidden; }
+.rvb i { display: block; height: 100%; border-radius: 5px; }
+.reveal .rvt { animation: rvin .45s ease-out both; animation-delay: var(--d); }
+.reveal .rvb i { animation: rvgrow .9s ease-out both; animation-delay: calc(var(--d) + .15s); transform-origin: left; }
+.reveal .rvt.win { animation: rvin .45s ease-out both, rvglow 1.4s ease-in-out calc(var(--d) + 1s) 2; }
+@keyframes rvin { from { opacity: 0; transform: translateY(8px); } }
+@keyframes rvgrow { from { transform: scaleX(0); } }
+@keyframes rvglow { 50% { box-shadow: 0 0 0 3px var(--gold2), 0 0 26px rgba(255,200,60,1); } }
+.reveal.still *, .noanim .reveal * { animation: none !important; }
+.rvd summary { cursor: pointer; font-weight: 700; margin: 6px 0; }
+.scorecard { width: 100%; border-radius: 8px; border: 1px solid var(--line); }
+
+/* statistics */
+.kpis { display: grid; grid-template-columns: repeat(4, 1fr); gap: 6px; margin-bottom: 10px; }
+.kpis div { text-align: center; background: rgba(184,137,44,.12); border: 1px solid var(--line); border-radius: 10px; padding: 6px 2px; font-size: 12px; }
+.kpis b { display: block; font: 700 22px Georgia, serif; }
+.sh { margin: 12px 0 4px; font-size: 15px; }
+.res.recent td { font-size: 12.5px; }
+.res.recent .w { color: #1f7a3a; font-weight: 700; } .res.recent .l { color: #a42a2a; font-weight: 700; }
+.keys kbd { display: inline-block; min-width: 22px; padding: 1px 6px; border: 1px solid #8a7656; border-bottom-width: 2px; border-radius: 5px; background: #fffaf0; font: 12px Consolas, monospace; text-align: center; }
+
+/* chapter transition */
+.chcard { position: fixed; inset: 0; z-index: 65; display: grid; place-items: center; padding: 14px; cursor: pointer;
+  background: radial-gradient(circle at 50% 40%, rgba(61,47,31,.92), rgba(20,14,8,.96)); color: #fff5dc; animation: chfade .5s ease-out both; }
+.chcard.out { animation: chfadeout .3s ease-in both; }
+.chin { width: min(440px, 100%); text-align: center; }
+.chk { letter-spacing: .2em; text-transform: uppercase; font-size: 12px; color: #e0b850; }
+.chcard h2 { font: 700 54px Georgia, serif; margin: 4px 0; color: #f3d27a; text-shadow: 0 0 18px rgba(224,184,80,.55); }
+.chcard:not(.still) h2 { animation: chtitle 1s cubic-bezier(.2,1.3,.4,1) .1s both; }
+.chsub { opacity: .85; margin-bottom: 12px; font-size: 14px; }
+.chrecap { width: 100%; background: rgba(255,245,220,.06); border-radius: 10px; color: #fff5dc; margin-bottom: 10px; }
+.chrecap td, .chrecap th { border-color: rgba(255,245,220,.15) !important; }
+.chrecap small { opacity: .6; } .chrecap .up { color: #7ee08f; font-size: 12px; } .chrecap .dn { color: #ff9a8a; font-size: 12px; }
+.chcard .muted { color: #cdbb98; font-size: 12px; }
+@keyframes chfade { from { opacity: 0; } }
+@keyframes chfadeout { to { opacity: 0; } }
+@keyframes chtitle { from { transform: scale(1.6); opacity: 0; letter-spacing: .3em; } }
+.chcard.still, .chcard.still h2 { animation: none; }
+
+/* guided tour */
+#tour { position: fixed; inset: 0; z-index: 45; pointer-events: none; }
+#tour .spot { position: fixed; border-radius: 12px; box-shadow: 0 0 0 9999px rgba(20,14,8,.5), 0 0 0 3px var(--gold2), 0 0 18px rgba(224,184,80,.8); transition: all .35s ease; }
+#tour .tcard { position: fixed; pointer-events: auto; background: var(--panel); color: var(--ink); border: 2px solid var(--gold); border-radius: 14px; padding: 10px 12px; box-shadow: 0 10px 30px rgba(0,0,0,.4); transition: left .3s, top .3s; }
+.tcard h3 { margin: 2px 0 4px; font: 700 18px Georgia, serif; }
+.tcard p { margin: 4px 0; font-size: 14px; }
+.tstep { font-size: 11px; letter-spacing: .1em; text-transform: uppercase; color: var(--muted); }
+.trow { display: flex; gap: 6px; align-items: center; margin-top: 8px; }
+.trow .spacer { flex: 1; }
+.twait { color: #8a6414; font-weight: 700; } .tdone { color: #1f7a3a; font-weight: 700; }
+.tourhint { margin: 10px 0 0; padding: 6px 10px; border-radius: 10px; background: rgba(184,137,44,.15); border: 1px dashed var(--gold); font-size: 13px; }
 .intel li { margin: 4px 0; }
 
 /* modal */
@@ -583,8 +662,17 @@ const ALLIES = {
 const SETS = {base: 'Base game', fan: 'Fan tiles: The Shire and Grond', allies: 'Allies expansion'};
 
 // ===== Rules engine: state in, legal actions and new state out. No DOM access. =====
-const APP_VERSION = '0.6';
+const APP_VERSION = '0.7';
 const CHANGELOG = [
+  {v: '0.7', date: '2026-10-31', items: [
+    'Move previews: hover a card, Landmark or region (or move the keyboard cursor onto it) to see exactly what playing, discarding or building would change.',
+    'Keyboard shortcuts: Space ends the turn, Z undoes, 1-9 pick choices, arrow keys move a cursor, Enter opens, P / D play or discard, ? lists them all.',
+    'Chapter transitions: a big chapter title card with a recap of what each side gained in the chapter just finished.',
+    'End of game reveal: an animated victory banner and the three tracks filling in, with Go to statistics as the default and Share result to save or send a scorecard image.',
+    'Statistics: win rate, current and best streak, and your recent games.',
+    'Guided tour: a short practice game with tips on the real board, from the home screen or the menu. Any game in progress is put back afterwards and practice never counts in statistics.',
+    'Journal: tap an entry that names a region to light it up on the map.',
+    'Top bar: a gold One Ring menu button and pills for whose turn it is, chapter progress, supply, Power and your Skills.']},
   {v: '0.6', date: '2026-10-31', items: [
     'Three-track victory tracker in the top bar (Quest, Races, Regions for both sides); tap it to see how each win works.',
     'Your Coins are shown large in the top bar, in your panel and in the prompt. Your own panel is now above your opponent\'s.',
@@ -1987,6 +2075,7 @@ const UI = {
   mute: store.get('mute', false), anim: store.get('anim', !matchMedia('(prefers-reduced-motion: reduce)').matches),
   art: Q.has('icons') ? false : store.get('art', true),
   autoEnd: store.get('autoEnd', true), aiSpeed: store.get('aiSpeed', 'slow'), aiPick: null, clashes: [],
+  kcur: null, hold: false, chSnap: null, practice: false, tour: null,
   freeze: Q.has('freeze'), debug: Q.has('debug'), edit: Q.has('edit'), auto: false, zoom: {}, modal: null, passFor: null, setup: null,
 };
 if (UI.freeze) UI.anim = false;
@@ -2435,9 +2524,13 @@ function promptHTML() {
   h += `<div class="actrow"><button data-a="undo" ${UI.undo.length ? '' : 'disabled'}>\u21B6 Undo</button>${legal.some(a => a.t === 'end') ? `<button class="primary" data-a="end">End turn</button>` : ''}</div></div>`;
   return h;
 }
+const logRegions = l => l.r ? [l.r] : REGION_IDS.filter(r => l.text.includes(rname(r)));
 function journalHTML() {
-  const L = UI.S.log.slice(-150).reverse();
-  return `<ul class="log">${L.map(l => `<li class="p${l.p} ${l.kind}">${esc(l.text)}</li>`).join('')}</ul>`;
+  const n = UI.S.log.length, L = UI.S.log.slice(-150).map((l, k) => ({l, i: n - Math.min(150, n) + k})).reverse();
+  return `<div class="muted" style="font-size:12px">Tap an entry that names a region to light it up on the map.</div><ul class="log">${L.map(({l, i}) => {
+    const rs = logRegions(l);
+    return `<li class="p${l.p} ${l.kind} ${rs.length ? 'jr' : ''}" ${rs.length ? `data-a="jr" data-i="${i}" title="Show on the map"` : ''}>${esc(l.text)}${rs.length ? ' <span class="jrpin">\u{1F4CD}</span>' : ''}</li>`;
+  }).join('')}</ul>`;
 }
 function intelHTML() {
   const v = viewer();
@@ -2502,6 +2595,8 @@ function renderGame() {
   if (UI.tab !== 'journal') $('.tabbody').scrollTop = keepScroll;
   for (const z of document.querySelectorAll('.zoom')) applyZoom(z);
   UI.flash = new Set();
+  markCursor();
+  if (UI.tour) tourPlace();
 }
 function debugHTML() {
   const S = UI.S;
@@ -2602,7 +2697,11 @@ function commit(a, human) {
   }
   const k = logKinds(prev, N);
   Sound(k.has('win') ? 'win' : k.has('chapter') ? 'chapter' : k.has('conflict') ? 'clash' : k.has('token') ? 'token' : k.has('quest') ? 'quest' : k.has('units') ? 'unit' : k.has('coins') ? 'coin' : 'card');
-  if (k.has('chapter') && !UI.auto) toast(`Chapter ${N.chapter}`);
+  if (k.has('chapter') && !UI.auto) {
+    if (UI.freeze || !humans().length) toast(`Chapter ${N.chapter}`);
+    else { UI.hold = true; setTimeout(() => showChapter(N), 350); }
+  }
+  UI.kcur = null;
   autoView();
   save();
   if (!UI.auto) { renderGame(); next(); }
@@ -2620,6 +2719,7 @@ function next() {
   clearTimeout(UI.timer);
   const S = UI.S, gen = UI.gen;
   if (S.winner) { finishGame(); return; }
+  if (UI.hold) return;
   const p = actor(S);
   if (!isHuman(p)) {
     const D = UI.freeze ? [0, 0] : !UI.anim ? [400, 120] : AI_SPEED[UI.aiSpeed] || AI_SPEED.slow;
@@ -2661,15 +2761,29 @@ function finishGame() {
   if (UI.S.done) return;
   UI.S.done = true; save();
   recordStats(UI.S);
-  setTimeout(showResult, UI.freeze ? 0 : 500);
+  setTimeout(showResult, UI.freeze ? 0 : 700);
 }
+// the three victory tracks, each [key, icon, label, max, value(S, p)]
+const TRACKS = [['quest', '\u{1F48D}', 'Quest of the Ring', 14, (S, p) => S.players[p].quest],
+  ['races', '\u{1F9DD}', 'Support of the Races', 6, (S, p) => Engine.distinctRaces(S.players[p])],
+  ['conquest', '\u{1F5FA}\uFE0F', 'Conquest of Middle-earth', 7, (S, p) => Engine.regionCount(S, p)]];
 function showResult() {
-  const S = UI.S, R = Engine.result(S), w = S.winner;
+  const S = UI.S, R = Engine.result(S), w = S.winner, tie = w.p === 'tie';
+  const col = tie ? 'var(--gold)' : SIDE_COL[w.p];
+  const youWon = !tie && humans().length === 1 && isHuman(w.p), youLost = !tie && humans().length === 1 && !isHuman(w.p);
+  const head = tie ? 'A shared victory' : youWon ? 'Victory!' : youLost ? 'Defeat' : `${esc(pname(S, w.p))} wins`;
+  const win = w.reason === 'regions' ? 'conquest' : w.reason;
+  const tracks = TRACKS.map(([k, ic, lab, max, f], ti) => `<div class="rvt ${k === win ? 'win' : ''}" style="--d:${.5 + ti * .7}s"><div class="rvl">${ic} ${lab}${k === 'conquest' && w.reason === 'regions' ? ' <small>(most regions decides)</small>' : ''}</div>
+    ${[0, 1].map(p => `<div class="rvr"><span style="color:${SIDE_COL[p]}">${esc(pname(S, p))}</span><span class="rvb"><i style="width:${Math.min(100, f(S, p) / max * 100)}%;background:${SIDE_COL[p]}"></i></span><b>${f(S, p)}<small>/${max}</small></b></div>`).join('')}</div>`).join('');
   const row = (k, f) => `<tr><td>${k}</td>${R.rows.map(f).map(x => `<td>${x}</td>`).join('')}</tr>`;
-  const body = `<p><b>${w.p === 'tie' ? 'A shared victory!' : `${esc(pname(S, w.p))} wins`}</b> \u2014 ${esc(REASONS[w.reason])}.</p>
-    <table class="res"><tr><th></th>${R.rows.map(r => `<th style="color:${SIDE_COL[SIDES.indexOf(r.side)]}">${esc(r.name)}</th>`).join('')}</tr>
-    ${row('Regions', r => r.regions)}${row('Races', r => r.races)}${row('Quest', r => r.quest + '/14')}${row('Coins', r => r.coins)}${row('Cards', r => r.cards)}${row('Landmarks', r => r.landmarks)}${row('Units on board', r => r.units)}</table>`;
-  modal({title: 'Game over', body, buttons: [{label: 'New game', cls: 'primary', fn: () => landing()}]});
+  const body = `<div class="reveal ${UI.anim ? '' : 'still'}"><div class="vbanner" style="--c:${col}"><div class="vb1">${tie ? '\u{1F91D}' : SIDES[w.p] === 'fellowship' ? '\u{1F48D}' : '\u{1F441}\uFE0F'}</div><div><div class="vb2">${head}</div><div class="vb3">${tie ? 'Both sides' : `${esc(SIDE_NAMES[SIDES[w.p]])}`} \u2014 ${esc(REASONS[w.reason])}</div></div></div>
+    <div class="rvts">${tracks}</div>
+    <details class="rvd"><summary>Full results</summary><table class="res"><tr><th></th>${R.rows.map(r => `<th style="color:${SIDE_COL[SIDES.indexOf(r.side)]}">${esc(r.name)}</th>`).join('')}</tr>
+    ${row('Regions', r => r.regions)}${row('Races', r => r.races)}${row('Quest', r => r.quest + '/14')}${row('Coins', r => r.coins)}${row('Cards', r => r.cards)}${row('Landmarks', r => r.landmarks)}${row('Units on board', r => r.units)}</table>
+    <p class="muted">Turn ${S.turnNo} \u00B7 Chapter ${S.chapter}${UI.practice ? ' \u00B7 practice game, not counted in statistics' : ''}</p></details></div>`;
+  modal({title: 'Game over', body, buttons: [
+    ...(UI.practice ? [] : [{label: 'Go to statistics', cls: 'primary', fn: showStats}]),
+    {label: '\u{1F4E4} Share result', fn: showShare}, {label: 'New game', cls: UI.practice ? 'primary' : '', fn: () => { if (UI.tour) tourEnd(false); landing(); }}]});
 }
 
 // ---------- click handling ----------
@@ -2691,6 +2805,13 @@ document.addEventListener('click', e => {
     case 'sheet': UI.sheetMin = !UI.sheetMin; return renderGame();
     case 'fit': UI.zoom[el.dataset.z] = {s: 1, x: 0, y: 0}; return renderGame();
     case 'mute': UI.mute = !UI.mute; store.set('mute', UI.mute); return renderGame();
+    case 'jr': {
+      const rs = logRegions(S.log[+el.dataset.i]);
+      if (matchMedia('(max-width: 759px)').matches) UI.view = 'map';
+      UI.flash = new Set(rs); renderGame();
+      for (const r of rs) { const g = $(`.v-map [data-r="${r}"]`); if (g) g.classList.add('jrhl'); }
+      return;
+    }
     case 'explain': return showExplain(el.dataset.k);
     case 'stack': return showStack(el.dataset.r);
     case 'menu': return showMenu();
@@ -2784,7 +2905,8 @@ function showMenu() {
     ${hasArt() ? `<label class="check"><input type="checkbox" id="m-art" ${UI.art ? 'checked' : ''}> Photo art: cards and board (off: clear icons)</label>` : ''}
     <p class="muted">Seed ${UI.S.seed} \u00B7 Fan tiles ${UI.S.opts.fan ? 'on' : 'off'} \u00B7 Allies ${UI.S.opts.allies ? 'on' : 'off'}</p>
     <p class="muted">LOTR Duel v${APP_VERSION}</p>`,
-  buttons: [{label: 'Main menu', fn: () => landing()}, {label: "What's new", fn: showChangelog},
+  buttons: [{label: 'Main menu', fn: () => { if (UI.tour) tourEnd(false); landing(); }}, {label: "What's new", fn: showChangelog},
+    {label: '\u2328\uFE0F Shortcuts', fn: showKeys}, ...(UI.tour ? [] : [{label: '\u{1F9ED} Guided tour', fn: tourStart}]),
     ...(canOfferInstall() ? [{label: 'Install app', fn: doInstall}] : []), {label: 'Results so far', fn: () => {
     const R = Engine.result(UI.S); modal({title: 'Current standing', body: `<table class="res"><tr><th></th>${R.rows.map(r => `<th>${esc(r.name)}</th>`).join('')}</tr>${['regions', 'races', 'quest', 'coins', 'cards', 'landmarks'].map(k => `<tr><td>${k}</td>${R.rows.map(r => `<td>${r[k]}</td>`).join('')}</tr>`).join('')}</table>`});
   }}]});
@@ -2853,33 +2975,47 @@ function showHelp() {
 }
 
 // ---------- save, stats ----------
-function save() { if (!UI.auto && UI.S && !Q.has('test')) store.set('save', {S: UI.S, viewer: UI.viewer}); }
+function save() { if (!UI.auto && !UI.practice && UI.S && !Q.has('test')) store.set('save', {S: UI.S, viewer: UI.viewer, chSnap: UI.chSnap}); }
+const snap = S => [0, 1].map(p => ({quest: S.players[p].quest, races: Engine.distinctRaces(S.players[p]), regions: Engine.regionCount(S, p), coins: S.players[p].coins,
+  cards: S.players[p].cards.length, landmarks: S.players[p].landmarks.length}));
+const STATS0 = () => ({games: 0, byLevel: {}, bySide: {}, reasons: {}, pnp: 0, streak: 0, best: 0, recent: []});
 function recordStats(S) {
-  if (UI.auto || !humans().length) return;
-  const st = store.get('stats', {games: 0, byLevel: {}, bySide: {}, reasons: {}, pnp: 0});
+  if (UI.auto || UI.practice || !humans().length) return;
+  const st = {...STATS0(), ...store.get('stats', {})};
   st.games++;
   st.reasons[S.winner.reason] = (st.reasons[S.winner.reason] || 0) + 1;
-  if (pnp()) st.pnp++;
+  const g = {d: new Date().toISOString().slice(0, 10), reason: S.winner.reason, turns: S.turnNo, w: S.winner.p === 'tie' ? 'tie' : SIDES[S.winner.p]};
+  if (pnp()) { st.pnp++; g.opp = 'pnp'; }
   else {
     const h = humans()[0], ai = seat(opp(h)).level, L = st.byLevel[ai] || (st.byLevel[ai] = {w: 0, l: 0, t: 0});
     const r = S.winner.p === 'tie' ? 't' : S.winner.p === h ? 'w' : 'l'; L[r]++;
     const sd = st.bySide[SIDES[h]] || (st.bySide[SIDES[h]] = {w: 0, l: 0, t: 0}); sd[r]++;
+    st.streak = r === 'w' ? st.streak + 1 : 0; st.best = Math.max(st.best, st.streak);
+    Object.assign(g, {opp: ai, side: SIDES[h], r});
   }
+  st.recent = [g, ...st.recent].slice(0, 12);
   store.set('stats', st);
 }
 function showStats() {
-  const st = store.get('stats', {games: 0, byLevel: {}, bySide: {}, reasons: {}, pnp: 0});
+  const st = {...STATS0(), ...store.get('stats', {})};
   const wlt = o => o ? `${o.w} won \u00B7 ${o.l} lost \u00B7 ${o.t} shared` : '\u2014';
-  modal({title: 'Statistics', body: `<p>${st.games} game${st.games === 1 ? '' : 's'} finished (${st.pnp} pass and play).</p>
+  const ai = Object.values(st.byLevel).reduce((a, o) => ({w: a.w + o.w, n: a.n + o.w + o.l + o.t}), {w: 0, n: 0});
+  const rate = ai.n ? Math.round(ai.w / ai.n * 100) + '%' : '\u2014';
+  const RN = {w: 'Won', l: 'Lost', t: 'Shared'};
+  const recent = st.recent.map(g => `<tr><td>${esc(g.d)}</td><td>${g.opp === 'pnp' ? 'Pass and play' : `as ${SIDE_NAMES[g.side]} vs AI ${g.opp}`}</td><td class="${g.r || ''}">${g.opp === 'pnp' ? (g.w === 'tie' ? 'Shared' : SIDE_NAMES[g.w] + ' won') : RN[g.r]}</td><td class="muted">${esc(REASONS[g.reason] || '')}, turn ${g.turns}</td></tr>`).join('');
+  modal({title: 'Statistics', body: `<div class="kpis"><div><b>${st.games}</b>Games</div><div><b>${rate}</b>Win rate vs AI</div><div><b>${st.streak}</b>Current streak</div><div><b>${st.best}</b>Best streak</div></div>
     <table class="res">${['easy', 'normal', 'hard'].map(l => `<tr><td>vs AI ${l}</td><td>${wlt(st.byLevel[l])}</td></tr>`).join('')}
-    ${SIDES.map(s => `<tr><td>as ${SIDE_NAMES[s]}</td><td>${wlt(st.bySide[s])}</td></tr>`).join('')}</table>
-    <p class="muted">Victories by type: ${Object.entries(st.reasons).map(([k, v]) => `${REASONS[k]} ${v}`).join(', ') || '\u2014'}</p><p class="muted">Stored only in this browser.</p>`,
+    ${SIDES.map(s => `<tr><td>as ${SIDE_NAMES[s]}</td><td>${wlt(st.bySide[s])}</td></tr>`).join('')}<tr><td>Pass and play</td><td>${st.pnp} game${st.pnp === 1 ? '' : 's'}</td></tr></table>
+    <p class="muted">Victories by type: ${Object.entries(st.reasons).map(([k, v]) => `${REASONS[k]} ${v}`).join(', ') || '\u2014'}</p>
+    ${recent ? `<h3 class="sh">Recent games</h3><table class="res recent">${recent}</table>` : ''}<p class="muted">Stored only in this browser. Practice games from the guided tour are not counted.</p>`,
     buttons: [{label: 'Reset', fn: () => { store.del('stats'); showStats(); }}]});
 }
 
 // ---------- landing ----------
 function landing() {
-  clearTimeout(UI.timer); UI.gen++; closeModal();
+  if (UI.tour) tourEnd(false);
+  clearTimeout(UI.timer); UI.gen++; closeModal(); UI.hold = false; UI.practice = false; tipHide();
+  document.querySelectorAll('.chcard').forEach(x => x.remove());
   document.querySelectorAll('.pass').forEach(x => x.remove());
   const o = UI.setup || store.get('setup', {side: 'fellowship', opp: 'normal', fan: true, allies: false});
   UI.setup = o;
@@ -2892,7 +3028,8 @@ function landing() {
     <div class="field"><label class="check"><input type="checkbox" id="o-fan" ${o.fan ? 'checked' : ''}> Fan Landmarks: The Shire and Grond</label>
       <label class="check"><input type="checkbox" id="o-allies" ${o.allies ? 'checked' : ''}> Allies expansion</label></div>
     <div class="row"><button class="primary" id="go">New game</button>${canCont ? '<button id="cont">Continue</button>' : ''}</div>
-    <div class="row" style="margin-top:8px"><button id="howto">How to play</button><button id="stats">Statistics</button></div>
+    <div class="row" style="margin-top:8px"><button id="howto">How to play</button><button id="tourbtn">\u{1F9ED} Guided tour</button><button id="stats">Statistics</button></div>
+    ${store.get('tourDone', false) ? '' : '<p class="tourhint">New here? Try the <b>Guided tour</b>: a short practice game with tips on the real board.</p>'}
     <div class="row" style="margin-top:8px"><button id="install" ${canOfferInstall() ? '' : 'hidden'}>\u{1F4F2} Install app</button></div>
     <div class="foot"><a href="${RULES_URL}" target="_blank" rel="noopener">Official rules</a></div></div>
     <p class="l-ver"><button type="button" id="ver" aria-haspopup="dialog" title="What's new: version history">v${APP_VERSION}</button> \u00B7 promptcrafted by BD</p></div>`;
@@ -2901,7 +3038,8 @@ function landing() {
   $('#o-fan').onchange = e => { o.fan = e.target.checked; store.set('setup', o); };
   $('#o-allies').onchange = e => { o.allies = e.target.checked; store.set('setup', o); };
   $('#go').onclick = () => startGame(o);
-  if (canCont) $('#cont').onclick = () => { UI.S = sv.S; UI.viewer = sv.viewer || 0; UI.undo = []; UI.gen++; renderGame(); next(); };
+  if (canCont) $('#cont').onclick = () => { UI.S = sv.S; UI.viewer = sv.viewer || 0; UI.chSnap = sv.chSnap || null; UI.undo = []; UI.gen++; UI.hold = false; renderGame(); next(); };
+  $('#tourbtn').onclick = tourStart;
   $('#howto').onclick = showHelp; $('#stats').onclick = showStats; $('#ver').onclick = showChangelog;
 }
 function startGame(o, seed) {
@@ -2910,9 +3048,280 @@ function startGame(o, seed) {
   const seats = [0, 1].map(p => o.opp === 'pnp' || p === h ? {name: SIDE_NAMES[SIDES[p]], type: 'human', level: 'normal'} : {name: SIDE_NAMES[SIDES[p]], type: 'ai', level: o.opp});
   if (o.opp !== 'pnp') seats[h].name = 'You';
   UI.S = Engine.newGame({seed: seed ?? (Q.has('seed') ? +Q.get('seed') : undefined), fan: o.fan, allies: o.allies, seats});
-  UI.undo = []; UI.gen++; UI.sel = null; UI.view = 'cards'; UI.tab = 'players'; UI.zoom = {};
+  UI.undo = []; UI.gen++; UI.sel = null; UI.view = 'cards'; UI.tab = 'players'; UI.zoom = {}; UI.hold = false; UI.kcur = null; UI.practice = false;
+  UI.chSnap = snap(UI.S);
   UI.viewer = o.opp === 'pnp' ? -1 : h;
   save(); renderGame(); next();
+}
+
+// ---------- move previews: simulate the action and list what changes ----------
+function outcome(S, a, p) {
+  let N; try { N = Engine.apply(S, a); } catch { return ''; }
+  const A = S.players[p], B = N.players[p], q = opp(p), out = [];
+  const d = (x, one, many = one + 's') => { if (x) out.push(`${x > 0 ? '+' : '\u2212'}${Math.abs(x)} ${Math.abs(x) === 1 ? one : many}`); };
+  const onBoard = (X, k) => REGION_IDS.reduce((n, r) => n + X.board[r].u[k], 0);
+  d(B.coins - A.coins, 'Coin'); d(B.quest - A.quest, 'Quest space'); d(Engine.distinctRaces(B) - Engine.distinctRaces(A), 'Race');
+  d(Engine.regionCount(N, p) - Engine.regionCount(S, p), 'Region'); d(onBoard(N, p) - onBoard(S, p), 'Unit on the board', 'Units on the board');
+  d(B.tokens.length - A.tokens.length, 'Alliance token'); d((B.power || 0) - (A.power || 0), 'Power');
+  const ta = skillTotals(A).t, tb = skillTotals(B).t;
+  for (const k of SKILLS) if ((tb[k] || 0) > (ta[k] || 0)) out.push(`+${tb[k] - (ta[k] || 0)} ${SKILL_ICON[k]} ${SKILL_NAMES[k]}`);
+  const newCards = B.cards.filter(id => !A.cards.includes(id));
+  for (const id of newCards) if (CARDS[id].chainOut) out.push(`chain symbol ${CHAIN_ICON[CARDS[id].chainOut]} for later`);
+  d(Engine.regionCount(N, q) - Engine.regionCount(S, q), 'enemy Region'); d(onBoard(N, q) - onBoard(S, q), 'enemy Unit', 'enemy Units');
+  const rev = N.slots.filter((s, k) => s.face && !S.slots[k].face).length;
+  if (rev) out.push(`reveals ${rev} card${rev > 1 ? 's' : ''}`);
+  if (N.extra > S.extra) out.push('another turn');
+  if (N.pending && N.pending.p === p) out.push(`then: ${N.pending.prompt}`);
+  if (N.winner) out.push(N.winner.p === p ? '\u{1F3C6} wins the game' : N.winner.p === 'tie' ? 'ends in a tie' : 'loses the game');
+  if (N.irrev) out.push('\u{1F512} cannot be undone');
+  return out.join(' \u00B7 ') || 'no immediate change';
+}
+function previewHTML(el) {
+  const S = UI.S; if (!S || !el) return '';
+  const who = myTurn() ? S.active : viewer(), main = myTurn() && !S.mainDone && !S.pending, P = S.players[who];
+  if (el.dataset.a === 'slot') {
+    const i = +el.dataset.i, sl = S.slots[i];
+    if (!sl || sl.taken) return '';
+    if (!sl.face) return `<b>Facedown card</b><div>${Engine.slotAvailable(S, i) ? 'Revealed shortly.' : 'Revealed when nothing covers it.'}${sl.power ? ' \u26A1 Power token on it.' : ''}</div>`;
+    const cost = Engine.cardCost(S, who, sl.id), acts = main ? Engine.legalActions(S).filter(a => a.t === 'take' && a.slot === i) : [];
+    let h = `<b>${esc(Engine.cardLabel(sl.id))}</b><div class="muted">${cost.chain ? '\u{1F517} free by chaining' : `costs ${cost.coins} Coin${cost.coins === 1 ? '' : 's'} \u00B7 you have ${P.coins}`}</div>`;
+    if (!Engine.slotAvailable(S, i)) return h + '<div>Covered: not available yet.</div>';
+    if (S.pending && myTurn() && S.pending.opts.some(o => o.slot === i)) return h + '<div>Click to choose it.</div>';
+    for (const a of acts) h += `<div><b>${a.mode === 'play' ? 'Play' : 'Discard'}:</b> ${esc(outcome(S, a, who))}</div>`;
+    if (main && !acts.some(a => a.mode === 'play')) h += `<div class="bad">Cannot afford to play it.</div>`;
+    return h;
+  }
+  if (el.dataset.a === 'tile') {
+    const t = el.dataset.t, c = Engine.tileCost(S, who, t), a = main && Engine.legalActions(S).find(x => x.t === 'tile' && x.tile === t);
+    return `<b>${esc(TILES[t].name)}</b><div class="muted">costs ${c.coins} Coin${c.coins === 1 ? '' : 's'} \u00B7 you have ${P.coins}</div>${a ? `<div><b>Build:</b> ${esc(outcome(S, a, who))}</div>` : main ? '<div class="bad">Cannot build it now.</div>' : ''}`;
+  }
+  if (el.dataset.a === 'region') {
+    const r = el.dataset.r, B = S.board[r];
+    const side = p => `<span style="color:${SIDE_COL[p]}">${esc(pname(S, p))}</span>: ${B.u[p]} Unit${B.u[p] === 1 ? '' : 's'}${B.f[p] ? ` + ${B.f[p]} Fortress` : ''}`;
+    const holder = [0, 1].filter(p => B.u[p] || B.f[p]);
+    return `<b>${esc(rname(r))}</b><div>${side(0)}</div><div>${side(1)}</div><div class="muted">${holder.length ? `Present: ${holder.map(p => esc(pname(S, p))).join(' and ')}` : 'Nobody is present'}</div>`;
+  }
+  return '';
+}
+const tipEl = () => $('#tip') || document.body.appendChild(Object.assign(document.createElement('div'), {id: 'tip', className: 'tip'}));
+let tipFor = null;
+function tipShow(el, x, y) {
+  if (el !== tipFor) { tipFor = el; const h = previewHTML(el); if (!h) return tipHide(); tipEl().innerHTML = h; }
+  const t = tipEl(); t.hidden = false;
+  const w = t.offsetWidth, hgt = t.offsetHeight;
+  t.style.left = Math.max(6, Math.min(innerWidth - w - 6, x + 14)) + 'px';
+  t.style.top = (y + 16 + hgt > innerHeight ? Math.max(6, y - hgt - 12) : y + 16) + 'px';
+}
+function tipHide() { tipFor = null; const t = $('#tip'); if (t) t.hidden = true; }
+document.addEventListener('pointermove', e => {
+  if (e.pointerType !== 'mouse' || !UI.S || UI.modal || !$('#game')) return;
+  const el = e.target.closest('.view [data-a="slot"], .view [data-a="tile"], .view [data-a="region"]');
+  if (!el) return tipFor && tipHide();
+  tipShow(el, e.clientX, e.clientY);
+});
+document.addEventListener('pointerdown', tipHide);
+
+// ---------- keyboard ----------
+const KEYS = [['Space', 'End your turn'], ['Z', 'Undo'], ['1 \u2013 9', 'Pick a listed choice, or a popup button'], ['\u2190 \u2192 \u2191 \u2193', 'Move the cursor over cards, Landmarks or target regions'],
+  ['Enter', 'Open (or choose) what the cursor is on'], ['P / D', 'Play or discard the card under the cursor'], ['M', 'Switch Cards and Middle-earth (phone)'],
+  ['J', 'Journal'], ['?', 'This list'], ['Esc', 'Close a popup']];
+function showKeys() {
+  modal({title: 'Keyboard shortcuts', body: `<table class="res keys">${KEYS.map(([k, v]) => `<tr><td><kbd>${k}</kbd></td><td>${v}</td></tr>`).join('')}</table><p class="muted">Hovering a card, Landmark or region with the mouse (or the cursor) previews it.</p>`});
+}
+function cursorTargets() {
+  const S = UI.S; if (!myTurn()) return [];
+  if (S.pending) {
+    const o = S.pending.opts, t = [];
+    for (const x of o) {
+      if (x.slot !== undefined) t.push({a: 'slot', v: x.slot});
+      else if (x.tile) t.push({a: 'tile', v: x.tile});
+      else if (x.region) t.push({a: 'region', v: x.region});
+      else if (x.from) { if (!UI.sel) t.push({a: 'region', v: x.from}); else if (x.from === UI.sel) t.push({a: 'region', v: x.to}); }
+      else if (x.regions) t.push({a: 'region', v: x.regions[0]});
+    }
+    return t.filter((x, i) => x.v && t.findIndex(y => y.a === x.a && y.v === x.v) === i);
+  }
+  if (S.mainDone) return [];
+  const sl = Engine.availableSlots(S).filter(i => S.slots[i].face).sort((a, b) => S.slots[a].r - S.slots[b].r || S.slots[a].x - S.slots[b].x);
+  return [...sl.map(v => ({a: 'slot', v})), ...S.tilesFace.filter(Boolean).map(v => ({a: 'tile', v}))];
+}
+const cursorEl = c => c && $(c.a === 'slot' ? `.view [data-a="slot"][data-i="${c.v}"]` : c.a === 'tile' ? `.view [data-a="tile"][data-t="${c.v}"]` : `.v-map [data-a="region"][data-r="${c.v}"]`);
+function markCursor() {
+  if (!UI.kcur) return;
+  const el = cursorEl(UI.kcur); if (!el) return;
+  el.classList.add('kcur');
+  const r = el.getBoundingClientRect(); tipFor = null; tipShow(el, r.right - 10, r.top + r.height / 2);
+}
+document.addEventListener('keydown', e => {
+  if (e.ctrlKey || e.metaKey || e.altKey || e.target.closest('input, select, textarea')) return;
+  const k = e.key, S = UI.S;
+  if (UI.modal) {
+    if (/^[1-9]$/.test(k)) { const b = UI.modal.el.querySelectorAll('.mf button')[k - 1]; if (b) { e.preventDefault(); b.click(); } }
+    else if (k === 'Enter' && !e.target.closest('button, summary')) { const b = UI.modal.el.querySelector('.mf button.primary'); if (b) { e.preventDefault(); b.click(); } }
+    return;
+  }
+  const cc = $('.chcard'); if (cc && (k === 'Enter' || k === ' ' || k === 'Escape')) { e.preventDefault(); return cc.click(); }
+  const pass = $('#passok'); if (pass && (k === 'Enter' || k === ' ')) { e.preventDefault(); return pass.click(); }
+  if (UI.tour && (k === 'ArrowRight' || k === 'ArrowLeft') && !UI.tour.waiting) { e.preventDefault(); return tourGo(UI.tour.i + (k === 'ArrowRight' ? 1 : -1)); }
+  if (!S || !$('#game')) return;
+  if (k === '?') { e.preventDefault(); return showKeys(); }
+  if (k === ' ' && !e.target.closest('button')) {
+    e.preventDefault();
+    if (myTurn() && Engine.legalActions(S).some(a => a.t === 'end')) commit({t: 'end'}, true);
+    return;
+  }
+  if (k === 'z' || k === 'Z') { if (UI.undo.length) { UI.S = UI.undo.pop(); UI.sel = null; UI.kcur = null; save(); renderGame(); } return; }
+  if (k === 'm' || k === 'M') { UI.view = UI.view === 'map' ? 'cards' : 'map'; return renderGame(); }
+  if (k === 'j' || k === 'J') { UI.tab = 'journal'; UI.sheetMin = false; return renderGame(); }
+  if (/^[1-9]$/.test(k)) { const b = document.querySelectorAll('.prompt [data-a="opt"]')[k - 1]; if (b) { e.preventDefault(); b.click(); } return; }
+  if (k.startsWith('Arrow')) {
+    const T = cursorTargets(); if (!T.length) return;
+    e.preventDefault();
+    const at = UI.kcur ? T.findIndex(c => c.a === UI.kcur.a && c.v === UI.kcur.v) : -1, step = k === 'ArrowRight' || k === 'ArrowDown' ? 1 : -1;
+    UI.kcur = T[at < 0 ? (step > 0 ? 0 : T.length - 1) : (at + step + T.length) % T.length];
+    if (matchMedia('(max-width: 759px)').matches) UI.view = UI.kcur.a === 'region' ? 'map' : 'cards';
+    return renderGame();
+  }
+  if (!UI.kcur) return;
+  const c = UI.kcur;
+  if (k === 'Enter') { e.preventDefault(); tipHide(); return c.a === 'slot' ? onSlot(c.v) : c.a === 'tile' ? onTile(c.v) : onRegion(c.v); }
+  if ((k === 'p' || k === 'P' || k === 'd' || k === 'D') && c.a === 'slot' && myTurn()) {
+    const a = Engine.legalActions(S).find(x => x.t === 'take' && x.slot === c.v && x.mode === (k.toLowerCase() === 'p' ? 'play' : 'discard'));
+    if (a) { tipHide(); commit(a, true); } else toast(k.toLowerCase() === 'p' ? 'You cannot play that card' : 'You cannot discard that card');
+  }
+});
+
+// ---------- chapter transition ----------
+const ROMAN = ['', 'I', 'II', 'III'];
+function showChapter(N) {
+  if (N !== UI.S) { UI.hold = false; return next(); }
+  const was = UI.chSnap, now = snap(N), ch = N.chapter - 1;
+  const rows = [['Quest', 'quest', '/14'], ['Races', 'races', '/6'], ['Regions', 'regions', '/7'], ['Coins', 'coins', ''], ['Cards', 'cards', ''], ['Landmarks', 'landmarks', '']];
+  const cell = (p, k, suf) => `<td><b>${now[p][k]}</b><small>${suf}</small>${was ? (d => d ? ` <span class="${d > 0 ? 'up' : 'dn'}">${d > 0 ? '+' : '\u2212'}${Math.abs(d)}</span>` : '')(now[p][k] - was[p][k]) : ''}</td>`;
+  const d = document.createElement('div');
+  d.className = 'chcard' + (UI.anim ? '' : ' still');
+  d.innerHTML = `<div class="chin"><div class="chk">Chapter ${ROMAN[ch]} complete</div><h2>Chapter ${ROMAN[N.chapter]}</h2>
+    <div class="chsub">${N.chapter === 3 ? 'The final chapter: if nobody wins outright, the side present in more regions wins.' : 'A new layout of cards is dealt.'}</div>
+    <table class="res chrecap"><tr><th></th>${[0, 1].map(p => `<th style="color:${SIDE_COL[p]}">${esc(pname(N, p))}</th>`).join('')}</tr>${rows.map(([lab, k, suf]) => `<tr><td>${lab}</td>${cell(0, k, suf)}${cell(1, k, suf)}</tr>`).join('')}</table>
+    <div class="muted">${was ? `Changes during chapter ${ROMAN[ch]} in green and red.` : ''} Tap or press Enter to continue.</div></div>`;
+  document.body.appendChild(d);
+  let done = false;
+  const go = () => { if (done) return; done = true; d.classList.add('out'); setTimeout(() => d.remove(), 300); UI.chSnap = now; save(); UI.hold = false; next(); };
+  d.onclick = go;
+  if (!UI.freeze) setTimeout(go, humans().length ? 9000 : 2500);
+}
+
+// ---------- share a scorecard image ----------
+function scorecard() {
+  const S = UI.S, w = S.winner, cv = document.createElement('canvas'), W = 1000, H = 560;
+  cv.width = W; cv.height = H;
+  const g = cv.getContext('2d');
+  const bg = g.createLinearGradient(0, 0, 0, H); bg.addColorStop(0, '#f3e8cc'); bg.addColorStop(1, '#dcc796');
+  g.fillStyle = bg; g.fillRect(0, 0, W, H);
+  g.strokeStyle = '#b8892c'; g.lineWidth = 6; g.strokeRect(14, 14, W - 28, H - 28);
+  g.fillStyle = '#3d2f1f'; g.fillRect(14, 14, W - 28, 92);
+  g.fillStyle = '#e0b850'; g.font = 'bold 40px Georgia, serif'; g.textAlign = 'left'; g.fillText('LOTR Duel for Middle-earth', 44, 74);
+  g.font = '20px Georgia, serif'; g.textAlign = 'right'; g.fillStyle = '#fff5dc'; g.fillText(new Date().toLocaleDateString(), W - 44, 72);
+  g.textAlign = 'left';
+  g.fillStyle = w.p === 'tie' ? '#8a6414' : SIDE_COL[w.p]; g.font = 'bold 46px Georgia, serif';
+  const wn = w.p === 'tie' ? '' : pname(S, w.p), side = w.p === 'tie' ? '' : SIDE_NAMES[SIDES[w.p]];
+  g.fillText(w.p === 'tie' ? 'A shared victory' : `${wn}${wn === 'You' ? ' win' : ' wins'}${wn === side ? '' : ` (${side})`}`, 44, 168);
+  g.fillStyle = '#3d2f1f'; g.font = 'italic 26px Georgia, serif'; g.fillText(REASONS[w.reason], 44, 206);
+  TRACKS.forEach(([k, , lab, max, f], ti) => {
+    const y = 250 + ti * 82;
+    g.fillStyle = '#3d2f1f'; g.font = 'bold 22px Georgia, serif'; g.fillText(lab, 44, y);
+    [0, 1].forEach(p => {
+      const yy = y + 12 + p * 26, v = f(S, p);
+      g.fillStyle = 'rgba(61,47,31,.15)'; g.fillRect(250, yy, 600, 18);
+      g.fillStyle = SIDE_COL[p]; g.fillRect(250, yy, 600 * Math.min(1, v / max), 18);
+      g.font = '18px sans-serif'; g.fillText(pname(S, p), 44, yy + 15);
+      g.fillStyle = '#3d2f1f'; g.fillText(`${v}/${max}`, 866, yy + 15);
+    });
+  });
+  g.font = '18px sans-serif'; g.fillStyle = '#6b5a45';
+  g.fillText(`Turn ${S.turnNo} \u00B7 Chapter ${S.chapter} \u00B7 ${S.opts.allies ? 'Allies \u00B7 ' : ''}v${APP_VERSION} \u00B7 benderrodrigo.github.io/lotr-duel`, 44, H - 36);
+  return cv;
+}
+function showShare() {
+  const cv = scorecard(), url = cv.toDataURL('image/png');
+  const canShare = !!(navigator.canShare && navigator.share);
+  modal({title: 'Share result', dock: false, body: `<img class="scorecard" src="${url}" alt="Scorecard image of this game">`, buttons: [
+    ...(canShare ? [{label: '\u{1F4E4} Share', cls: 'primary', keep: true, fn: () => cv.toBlob(b => {
+      const f = new File([b], 'lotr-duel-result.png', {type: 'image/png'});
+      (navigator.canShare({files: [f]}) ? navigator.share({files: [f], title: 'LOTR Duel result'}) : navigator.share({title: 'LOTR Duel result', text: `${REASONS[UI.S.winner.reason]} \u2014 LOTR Duel`})).catch(() => {});
+    })}] : []),
+    {label: '\u2B07\uFE0F Save image', cls: canShare ? '' : 'primary', keep: true, fn: () => { const a = document.createElement('a'); a.href = url; a.download = 'lotr-duel-result.png'; a.click(); }},
+    {label: 'Back to results', fn: showResult}]});
+}
+
+// ---------- guided tour on a practice game ----------
+const TOUR = [
+  {sel: '.vt', view: 'cards', t: 'Three ways to win', b: 'Race to the end of the Quest, gather 6 different Race symbols, or be present in all 7 regions. Your numbers are blue, Sauron\u2019s red. Tap the tracker any time for details.'},
+  {sel: '.coinchip.big', view: 'cards', t: 'Your Coins', b: 'Coins pay for the Skills you are missing and for Landmarks. Discarding a card earns Coins equal to the chapter number.'},
+  {sel: '.v-cards .zoom', view: 'cards', t: 'The chapter layout', b: 'Take any card that no other card covers. A green glow means free by chaining, red means too expensive. Hover a card, or use the arrow keys, to preview exactly what it would do.'},
+  {sel: '.v-cards .zoom', view: 'cards', t: 'Try it: take a card', b: 'Tap a card, then Play or Discard it. Your turn ends by itself after your main action, and Sauron replies.', wait: T => UI.S.log.slice(T.log0).some(l => l.p === 0 && (l.kind === 'play' || l.kind === 'discard'))},
+  {sel: '.tiles', view: 'cards', t: 'Landmarks and Fortresses', b: 'Building a Landmark places a Fortress in its region. A Fortress keeps you present there even with no Units, but each one makes your next Landmark cost 1 Coin more.'},
+  {sel: '.v-map .zoom', view: 'map', t: 'Middle-earth', b: 'Red cards place Units. Opposing Units in the same region fight 1 for 1, shown with an animation. Hover a region to see who is present.'},
+  {sel: '.quest', view: 'map', t: 'The Quest', b: 'Blue cards move the Ring (Fellowship) or the Nazg\u00fbl (Sauron). Spaces 3, 6, 9 and 12 give a bonus.'},
+  {sel: '.side .panelrest', view: 'cards', sheet: true, t: 'Players, Races and the Journal', b: 'Your side is on top. The Race alliance stacks show tokens left: tap one to preview the powers you might draw. The Journal lists every move; tap an entry to light up its region.'},
+  {sel: '.menubtn', view: 'cards', t: 'Menu and shortcuts', b: 'Sound, animations, opponent speed and auto end turn are in the menu. On a keyboard, press ? for shortcuts. That is the tour: play on, or start a real game from the main menu.'}];
+function tourStart() {
+  closeModal();
+  const back = UI.S && !UI.S.winner && !UI.practice ? {S: UI.S, undo: UI.undo, viewer: UI.viewer, view: UI.view, tab: UI.tab, chSnap: UI.chSnap, sheetMin: UI.sheetMin} : null;
+  clearTimeout(UI.timer); UI.gen++;
+  UI.practice = true;
+  const seats = [{name: 'You', type: 'human', level: 'normal'}, {name: 'Sauron', type: 'ai', level: 'easy'}];
+  UI.S = Engine.newGame({seed: 4242, fan: false, allies: false, seats});
+  UI.undo = []; UI.viewer = 0; UI.view = 'cards'; UI.tab = 'players'; UI.zoom = {}; UI.hold = false; UI.kcur = null; UI.chSnap = snap(UI.S);
+  UI.tour = {i: 0, back, log0: 0};
+  document.body.insertAdjacentHTML('beforeend', `<div id="tour"><div class="spot"></div><div class="tcard" role="dialog" aria-live="polite"></div></div>`);
+  $('#tour .tcard').addEventListener('click', e => {
+    const b = e.target.closest('[data-tour]'); if (!b) return;
+    const k = b.dataset.tour;
+    if (k === 'skip') return tourEnd(true);
+    tourGo(UI.tour.i + (k === 'next' ? 1 : -1));
+  });
+  addEventListener('resize', tourPlace);
+  renderGame(); next(); tourGo(0);
+}
+function tourGo(i) {
+  const T = UI.tour; if (!T) return;
+  if (i >= TOUR.length) return tourEnd(true);
+  T.i = Math.max(0, i);
+  const st = TOUR[T.i];
+  if (st.wait) T.log0 = UI.S.log.length;
+  if (st.view && matchMedia('(max-width: 759px)').matches) UI.view = st.view;
+  if (st.sheet) { UI.sheetMin = false; UI.tab = 'players'; }
+  renderGame();
+}
+function tourPlace() {
+  const T = UI.tour, box = $('#tour'); if (!T || !box) return;
+  const st = TOUR[T.i], el = $(st.sel), spot = $('.spot', box), card = $('.tcard', box);
+  T.waiting = !!(st.wait && !st.wait(T));
+  card.innerHTML = `<div class="tstep">Step ${T.i + 1} of ${TOUR.length}</div><h3>${st.t}</h3><p>${st.b}</p>${st.wait ? `<p class="${T.waiting ? 'twait' : 'tdone'}">${T.waiting ? '\u23F3 Waiting for your move\u2026' : '\u2714 Nicely done.'}</p>` : ''}
+    <div class="trow"><button data-tour="skip" class="ghost">${T.i === TOUR.length - 1 ? 'Close' : 'Skip tour'}</button><span class="spacer"></span><button data-tour="back" ${T.i ? '' : 'disabled'}>Back</button><button data-tour="next" class="primary" ${T.waiting ? 'disabled' : ''}>${T.i === TOUR.length - 1 ? 'Finish' : 'Next'}</button></div>`;
+  if (!el) { spot.hidden = true; card.style.left = '50%'; card.style.top = '30%'; card.style.transform = 'translateX(-50%)'; return; }
+  const r = el.getBoundingClientRect(), pad = 6;
+  Object.assign(spot.style, {left: r.left - pad + 'px', top: r.top - pad + 'px', width: r.width + pad * 2 + 'px', height: r.height + pad * 2 + 'px'}); spot.hidden = false;
+  const cw = Math.min(340, innerWidth - 20), ch = card.offsetHeight || 200;
+  card.style.width = cw + 'px'; card.style.transform = '';
+  let x = r.left + r.width / 2 - cw / 2, y = r.bottom + 14;
+  if (y + ch > innerHeight - 8) y = r.top - ch - 14;
+  if (y < 8) { y = Math.max(8, Math.min(innerHeight - ch - 8, r.top + 20)); x = r.right + 14 + cw < innerWidth ? r.right + 14 : r.left - cw - 14; }
+  card.style.left = Math.max(10, Math.min(innerWidth - cw - 10, x)) + 'px'; card.style.top = Math.max(8, y) + 'px';
+}
+// restore: put back the game that was in progress, or keep playing the practice game if there was none
+function tourEnd(restore) {
+  const T = UI.tour; if (!T) return;
+  UI.tour = null; store.set('tourDone', true);
+  removeEventListener('resize', tourPlace);
+  const box = $('#tour'); if (box) box.remove();
+  if (!restore) { UI.practice = false; return; }
+  if (T.back) {
+    clearTimeout(UI.timer); UI.gen++; closeModal(); UI.practice = false;
+    Object.assign(UI, {S: T.back.S, undo: T.back.undo, viewer: T.back.viewer, view: T.back.view, tab: T.back.tab, chSnap: T.back.chSnap, sheetMin: T.back.sheetMin, zoom: {}, hold: false});
+    renderGame(); next(); toast('Back to your game');
+  } else { renderGame(); toast('Practice game: play on, it is not saved or counted.\nStart a real game from the menu.', 3200); }
 }
 
 // ---------- ?test, ?selfplay, ?freeze ----------
@@ -2980,6 +3389,17 @@ function runFreeze() {
   if (pop === 'help') showHelp();
   if (pop === 'card') { const i = Engine.availableSlots(UI.S).find(k => UI.S.slots[k].face); if (i !== undefined) onSlot(i); }
   if (pop === 'menu') showMenu();
+  if (pop === 'keys') showKeys();
+  if (pop === 'stats') { if (UI.S.winner) recordStats(UI.S); showStats(); }
+  if (pop === 'result' && UI.S.winner) showResult();
+  if (pop === 'share' && UI.S.winner) showShare();
+  if (pop === 'chapter') { UI.chSnap = snap(UI.S); UI.chSnap.forEach(s => { s.quest = Math.max(0, s.quest - 2); s.coins += 1; }); showChapter(UI.S); }
+  if (pop === 'tour') { UI.freeze = false; tourStart(); UI.freeze = true; clearTimeout(UI.timer); tourGo(+(Q.get('tstep') || 1) - 1); }
+  if (pop === 'cursor') { UI.kcur = cursorTargets()[+(Q.get('k') || 0)] || null; renderGame(); }
+  if (pop === 'preview') {
+    const i = Engine.availableSlots(UI.S).find(k => UI.S.slots[k].face), el = i !== undefined && $(`.view [data-a="slot"][data-i="${i}"]`);
+    if (el) { const r = el.getBoundingClientRect(); tipShow(el, r.left + r.width / 2, r.top + r.height / 2); el.classList.add('kcur'); }
+  }
   document.title = `FROZEN turn ${UI.S.turnNo}`;
 }
 
