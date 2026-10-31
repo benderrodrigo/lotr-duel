@@ -77,6 +77,16 @@ a { color: #6a3e12; }
 #game { height: 100dvh; display: grid; grid-template-rows: auto 1fr; overflow: hidden; }
 .top { display: flex; align-items: center; gap: 6px; padding: 4px 6px; background: #3d2f1f; color: #fff5dc; min-height: 44px; }
 .top button { background: transparent; color: #fff5dc; border-color: rgba(255,245,220,.25); padding: 4px 9px; min-height: 36px; }
+.top .menubtn { padding: 2px 5px; border-radius: 50%; width: 40px; min-height: 40px; display: grid; place-items: center; background: radial-gradient(circle, #1a120a 40%, #2a1e12 100%); border: 1px solid rgba(224,184,80,.55); box-shadow: inset 0 0 6px rgba(0,0,0,.6), 0 0 0 rgba(255,122,26,0); transition: box-shadow .3s, transform .2s; }
+.top .menubtn:hover, .top .menubtn:focus-visible { box-shadow: inset 0 0 6px rgba(0,0,0,.6), 0 0 12px rgba(255,122,26,.6); transform: scale(1.06); }
+.top .menubtn:active { transform: scale(.94); }
+.mring .mrrun { transform-origin: 0 0; animation: mrspin 14s linear infinite; opacity: .55; }
+.mring .mrglow { opacity: .35; transition: opacity .3s; }
+.menubtn:hover .mrrun, .menubtn:focus-visible .mrrun { opacity: 1; animation-duration: 4s; }
+.menubtn:hover .mrglow, .menubtn:focus-visible .mrglow { opacity: 1; }
+@keyframes mrspin { to { transform: rotate(360deg); } }
+.noanim .mring .mrrun { animation: none; }
+@media (prefers-reduced-motion: reduce) { .mring .mrrun { animation: none; } }
 .top .title { font-family: Georgia, serif; font-weight: 700; white-space: nowrap; }
 .top .spacer { flex: 1; }
 .pills { display: flex; gap: 6px; flex-wrap: wrap; align-items: center; }
@@ -2419,6 +2429,19 @@ function sideBody() {
   return playerHTML(me) + playerHTML(opp(me)) + stacksHTML();
 }
 
+const MENU_ICON = `<svg class="mring" width="28" height="28" viewBox="-16 -16 32 32" aria-hidden="true">
+  <defs>
+    <linearGradient id="mrG" x1="0" y1="0" x2="1" y2="1"><stop offset="0" stop-color="#fff1b0"/><stop offset=".35" stop-color="#e0b850"/><stop offset=".7" stop-color="#9a6a16"/><stop offset="1" stop-color="#f3d27a"/></linearGradient>
+    <radialGradient id="mrF"><stop offset=".55" stop-color="#ff7a1a" stop-opacity="0"/><stop offset=".8" stop-color="#ff7a1a" stop-opacity=".55"/><stop offset="1" stop-color="#ff7a1a" stop-opacity="0"/></radialGradient>
+  </defs>
+  <circle class="mrglow" r="15.5" fill="url(#mrF)"/>
+  <circle r="10.5" fill="none" stroke="url(#mrG)" stroke-width="5"/>
+  <circle r="12.6" fill="none" stroke="#6b4a10" stroke-width=".6" opacity=".7"/>
+  <circle r="8.4" fill="none" stroke="#6b4a10" stroke-width=".6" opacity=".7"/>
+  <g class="mrrun"><circle r="10.5" fill="none" stroke="#ff9a3a" stroke-width="1.1" stroke-dasharray="2.2 1 .6 1.4 3 1 1 1.6" stroke-linecap="round"/></g>
+  <path d="M-7 -6.5 A10.5 10.5 0 0 1 3 -10.1" fill="none" stroke="#fffbe6" stroke-width="1.2" stroke-linecap="round" opacity=".8"/>
+</svg>`;
+
 // ---------- full render ----------
 function renderGame() {
   const S = UI.S, app = $('#app');
@@ -2431,7 +2454,7 @@ function renderGame() {
   const coin = (p, big) => `<span class="coinchip ${big ? 'big' : ''} ${S.active === p && !S.winner ? 'active' : ''}" title="${esc(pname(S, p))}: ${S.players[p].coins} Coins"><svg width="${big ? 22 : 16}" height="${big ? 22 : 16}" viewBox="-10 -10 20 20">${coinSVG(0, 0, '', 9)}</svg><b>${S.players[p].coins}</b><small>${humans().length === 1 && isHuman(p) ? 'You' : esc(pname(S, p)).slice(0, 9)}</small></span>`;
   const disc = S.discard.length;
   app.innerHTML = `<div id="game" class="${UI.anim ? '' : 'noanim'}">
-    <div class="top"><button data-a="menu" title="Menu">\u2630</button><span class="title">LOTR Duel</span>
+    <div class="top"><button data-a="menu" class="menubtn" title="Menu" aria-label="Menu">${MENU_ICON}</button><span class="title">LOTR Duel</span>
       <span class="pill chpill">Ch ${S.chapter}</span>${tracker}${coin(me, true)}${coin(them, false)}<span class="spacer"></span>
       <button data-a="discard" title="Discard pile">\u{1F5D1} ${disc}</button><button data-a="mute" title="Sound">${UI.mute ? '\u{1F507}' : '\u{1F50A}'}</button><button data-a="help" title="How to play">?</button></div>
     <div class="main show-${UI.view}">
