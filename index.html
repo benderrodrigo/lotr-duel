@@ -209,7 +209,58 @@ table.res th:first-child, table.res td:first-child { text-align: left; }
   padding: 6px 8px; border-radius: 6px; max-width: 360px; }
 .dbg textarea { width: 100%; height: 120px; font: 11px Consolas, monospace; }
 .toast { position: fixed; left: 50%; top: 52px; transform: translateX(-50%); background: #3d2f1f; color: #fff5dc; padding: 6px 14px;
-  border-radius: 999px; z-index: 70; font-size: 14px; pointer-events: none; }
+  border-radius: 18px; z-index: 70; font-size: 14px; pointer-events: none; white-space: pre-line; max-width: min(92vw, 560px); text-align: center; }
+
+/* victory tracker and coins (top bar) */
+.top .vt { display: flex; gap: 10px; align-items: center; padding: 2px 8px; min-height: 40px; border-radius: 10px; background: rgba(255,255,255,.06); }
+.vt1 { display: grid; grid-template-columns: auto auto; grid-template-rows: auto auto; column-gap: 5px; align-items: center; font-size: 12px; }
+.vti { grid-row: 1 / 3; font-size: 17px; }
+.vtl { font-size: 11px; opacity: .8; line-height: 1; }
+.vtb { display: grid; gap: 2px; width: 58px; }
+.vtk { display: block; height: 6px; border-radius: 3px; background: rgba(255,245,220,.22); overflow: hidden; }
+.vtk i { display: block; height: 100%; border-radius: 3px; filter: brightness(1.45); }
+.vtn { grid-column: 2; font-size: 12px; line-height: 1.1; white-space: nowrap; }
+.vtn b { filter: brightness(1.9); }
+.vtn small { opacity: .7; }
+.vt1 { grid-template-areas: "i l" "i b" "i n"; grid-template-rows: auto auto auto; }
+.vt1 .vti { grid-area: i; } .vt1 .vtl { grid-area: l; } .vt1 .vtb { grid-area: b; } .vt1 .vtn { grid-area: n; }
+.coinchip { display: inline-flex; align-items: center; gap: 3px; padding: 2px 8px 2px 4px; border-radius: 999px; background: rgba(255,255,255,.08); font-size: 13px; }
+.coinchip b { font-size: 15px; }
+.coinchip.big { background: #f2c94c; color: #3a2700; }
+.coinchip.big b { font-size: 19px; }
+.coinchip small { font-size: 10px; opacity: .85; }
+.coinchip.active { box-shadow: 0 0 0 2px var(--gold2); }
+.stats .coinstat { background: #f8e3a0; }
+.stats .coinstat b { display: flex; align-items: center; justify-content: center; gap: 3px; font-size: 18px; }
+.coinword { background: #f8e3a0; padding: 0 5px; border-radius: 6px; }
+.linkbtn { background: none; border: 0; padding: 0; min-height: 0; color: inherit; font: inherit; text-decoration: underline dotted; cursor: pointer; }
+.legend { display: flex; gap: 8px; margin-top: 4px; font-size: 12px; }
+.legend .lg { padding: 0 6px; border-radius: 6px; border: 2px solid; }
+.legend .chain { border-color: #2fe063; background: #e9ffe9; }
+.legend .cant { border-color: #e3342b; background: #ffe9e6; }
+.vrow { margin: 10px 0; }
+.vbar { display: grid; grid-template-columns: 90px 1fr 44px; gap: 6px; align-items: center; font-size: 13px; }
+.vtrack { height: 10px; background: var(--parch); border-radius: 5px; overflow: hidden; border: 1px solid var(--line); }
+.vtrack i { display: block; height: 100%; }
+/* race alliance stacks */
+.stackrow { display: grid; grid-template-columns: repeat(3, 1fr); gap: 4px; }
+.stack { display: grid; grid-template-columns: auto 1fr; column-gap: 4px; text-align: left; padding: 3px 6px; min-height: 0; font-size: 12px; background: var(--parch); }
+.stack .si { grid-row: 1 / 3; font-size: 18px; align-self: center; }
+.stack .sc { color: #6b5a40; font-size: 11px; }
+.stack.empty { opacity: .45; }
+/* opponent's move banner and conflicts */
+.aiplay { position: fixed; left: 50%; top: 56px; transform: translateX(-50%); z-index: 72; display: flex; gap: 10px; align-items: center;
+  background: #fffaf0; border: 3px solid; border-radius: 12px; padding: 6px 12px 6px 6px; box-shadow: 0 6px 22px rgba(0,0,0,.35); font-size: 14px;
+  animation: aipop .35s ease-out; pointer-events: none; max-width: 92vw; }
+.aiplay img { border-radius: 6px; }
+@keyframes aipop { from { transform: translate(-50%, -14px); opacity: 0; } to { transform: translate(-50%, 0); opacity: 1; } }
+.card.pick { animation: pickpulse 1s ease-in-out infinite; }
+.tile.aipick { border-color: #ffd84a; box-shadow: 0 0 0 3px #ffd84a, 0 0 16px 4px #ffd84a; animation: pickpulse 1s ease-in-out infinite; }
+@keyframes pickpulse { 50% { opacity: .78; } }
+.clash { transform-box: fill-box; transform-origin: center; animation: clash 3.2s ease-out forwards; }
+@keyframes clash { 0% { transform: scale(.3); opacity: 0; } 10% { transform: scale(1.15); opacity: 1; } 18% { transform: scale(1); } 22%, 30% { transform: rotate(-4deg); }
+  26% { transform: rotate(4deg); } 34% { transform: none; } 82% { opacity: 1; } 100% { opacity: 0; } }
+.noanim .clash { animation: none; }
 
 .sheetbtn { display: none !important; float: right; min-height: 28px !important; padding: 0 8px !important; }
 
@@ -228,6 +279,16 @@ table.res th:first-child, table.res td:first-child { text-align: left; }
 @media (max-width: 759px) {
   .top .title, .top .chpill, .top [data-a="help"] { display: none; }
   .pill { font-size: 12px; padding: 1px 6px; }
+  .top { gap: 4px; }
+  .top .vt { gap: 6px; padding: 2px 4px; }
+  .vtl { display: none; }
+  .vtb { width: 26px; }
+  .top [data-a="mute"] { display: none; }
+  .top .vt { min-width: 0; flex: 0 1 auto; overflow: hidden; }
+  .vti { font-size: 14px; }
+  .coinchip small { display: none; }
+  .coinchip:not(.big) { padding: 2px 5px 2px 2px; }
+  .vtn small { display: none; }
   .main { grid-template-columns: 100%; grid-template-rows: auto minmax(0, 1fr) auto; grid-template-areas: "tabs" "view" "side"; }
   .tabsbar { display: flex; grid-area: tabs; border-bottom: 1px solid var(--line); background: var(--parch2); }
   .tabsbar button { flex: 1; border: 0; border-radius: 0; background: transparent; border-bottom: 3px solid transparent; min-height: 36px; }
@@ -491,8 +552,19 @@ const ALLIES = {
 const SETS = {base: 'Base game', fan: 'Fan tiles: The Shire and Grond', allies: 'Allies expansion'};
 
 // ===== Rules engine: state in, legal actions and new state out. No DOM access. =====
-const APP_VERSION = '0.5';
+const APP_VERSION = '0.6';
 const CHANGELOG = [
+  {v: '0.6', date: '2026-10-31', items: [
+    'Three-track victory tracker in the top bar (Quest, Races, Regions for both sides); tap it to see how each win works.',
+    'Your Coins are shown large in the top bar, in your panel and in the prompt. Your own panel is now above your opponent\'s.',
+    'The opponent\'s move is easier to follow: its chosen card is highlighted and announced, with a slower pace (Menu \u2192 Opponent speed).',
+    'Your turn ends automatically after your main action (Menu option); call an Ally first if you want one.',
+    'Cards you can chain for free glow green, cards you cannot afford glow red.',
+    'Conflicts show an animated "3 vs 1" result on the map and a message with the outcome.',
+    'Race alliance stacks with tokens left; tap one to preview the powers you might draw.',
+    'Explanations for Fortresses, Allies and Race alliances (\u24D8 links and How to play).',
+    'Photo art version: the Quest track uses the real track art with the Fellowship ring and Nazg\u00fbl figures.',
+  ]},
   {v: '0.5', date: '2026-10-30', items: [
     'Real art for the Middle-earth board: with photo art on, the map is the real board, with Units, Fortresses and Balrog markers on each region\'s name box and outlined targets.',
     'The landing page uses the original ring-and-Mount-Doom illustration in every version (no box art).',
@@ -531,9 +603,9 @@ function shuffle(S, a) {
   for (let i = a.length - 1; i > 0; i--) { const j = Math.floor(rnd(S) * (i + 1)); [a[i], a[j]] = [a[j], a[i]]; }
   return a;
 }
-function log(S, text, kind = '') {
+function log(S, text, kind = '', extra) {
   if (S.sim) return;
-  S.log.push({turn: S.turnNo, p: S.active, ch: S.chapter, text, kind});
+  S.log.push({turn: S.turnNo, p: S.active, ch: S.chapter, text, kind, ...extra});
 }
 const pname = (S, p) => (S.seats && S.seats[p] && S.seats[p].name) || SIDE_NAMES[SIDES[p]];
 const rname = r => (REGIONS.find(x => x.id === r) || {name: r}).name;
@@ -815,10 +887,14 @@ function placeUnits(N, p, r, n) {
   conflict(N, r);
 }
 function conflict(N, r) {
-  const b = N.board[r];
+  const b = N.board[r], before = [...b.u];
   let n = 0;
   while (b.u[0] > 0 && b.u[1] > 0) { b.u[0]--; b.u[1]--; N.players[0].units++; N.players[1].units++; n++; }
-  if (n) log(N, `Conflict in ${rname(r)}: each side loses ${n} Unit${n > 1 ? 's' : ''}.`, 'conflict');
+  if (!n) return;
+  const w = b.u[0] ? 0 : b.u[1] ? 1 : -1;
+  const out = w < 0 ? 'no Units remain' : `${pname(N, w)} holds with ${b.u[w]}`;
+  log(N, `Conflict in ${rname(r)}: ${pname(N, 0)} ${before[0]} vs ${pname(N, 1)} ${before[1]}. Each side loses ${n} Unit${n > 1 ? 's' : ''}; ${out}.`, 'conflict',
+    {r, before, after: [...b.u]});
 }
 function moveOpts(N, p) {
   const o = [];
@@ -1544,6 +1620,8 @@ const Tests = (() => {
     S = pick(S, o => o.region === 'rohan');
     eq(S.board.rohan.u, [0, 0], 'conflict');
     eq(S.players[0].units, 14); eq(S.players[1].units, 13);
+    const L = S.log.filter(l => l.kind === 'conflict').pop();
+    eq([L.r, L.before, L.after], ['rohan', [1, 1], [0, 0]], 'conflict log carries the outcome for the animation');
   });
   test('15-Unit cap: extra Units are lost', () => {
     let S = fresh(); S.players[1].units = 1; S.players[1].coins = 20;
@@ -1877,6 +1955,7 @@ const UI = {
   sheetMin: matchMedia('(max-width: 759px)').matches,
   mute: store.get('mute', false), anim: store.get('anim', !matchMedia('(prefers-reduced-motion: reduce)').matches),
   art: Q.has('icons') ? false : store.get('art', true),
+  autoEnd: store.get('autoEnd', true), aiSpeed: store.get('aiSpeed', 'slow'), aiPick: null, clashes: [],
   freeze: Q.has('freeze'), debug: Q.has('debug'), edit: Q.has('edit'), auto: false, zoom: {}, modal: null, passFor: null, setup: null,
 };
 if (UI.freeze) UI.anim = false;
@@ -1914,9 +1993,9 @@ function viewer() {
   return 0;
 }
 const myTurn = () => UI.S && !UI.S.winner && isHuman(actor(UI.S)) && (!pnp() || UI.viewer === actor(UI.S)) && !UI.auto;
-function toast(msg) {
+function toast(msg, ms = 1800) {
   const t = document.createElement('div'); t.className = 'toast'; t.textContent = msg; document.body.appendChild(t);
-  setTimeout(() => t.remove(), 1800);
+  setTimeout(() => t.remove(), ms);
 }
 const coinSVG = (x, y, n, r = 9) => `<circle cx="${x}" cy="${y}" r="${r}" fill="#f2c94c" stroke="#9a6d12" stroke-width="1.5"/><text x="${x}" y="${y + r * .42}" font-size="${r * 1.2}" text-anchor="middle" font-weight="700" fill="#5a3d00">${n}</text>`;
 const ringSVG = (x, y, r = 9) => `<circle cx="${x}" cy="${y}" r="${r}" fill="none" stroke="#d4a017" stroke-width="${r * .45}"/><circle cx="${x}" cy="${y}" r="${r}" fill="none" stroke="#fff3b0" stroke-width="1" opacity=".7"/>`;
@@ -2016,14 +2095,18 @@ function pyramidSVG() {
   const targ = new Set(pend ? pend.opts.filter(o => o.slot !== undefined).map(o => o.slot) : []);
   const main = myTurn() && !S.pending && !S.mainDone;
   const legal = main ? Engine.legalActions(S) : [];
-  let s = '';
+  const who = myTurn() ? S.active : me, purse = S.players[who].coins, pick = UI.aiPick;
+  const glow = (id, col, sd) => `<filter id="${id}" x="-25%" y="-25%" width="150%" height="150%"><feDropShadow dx="0" dy="0" stdDeviation="${sd}" flood-color="${col}" flood-opacity="1"/></filter>`;
+  let s = `<defs>${glow('gChain', '#2fe063', 4.5)}${glow('gCant', '#e3342b', 4)}${glow('gPick', '#ffd84a', 7)}</defs>`;
   slots.forEach((sl, i) => {
     const x = 8 + (sl.x - minX) * UX, y = 8 + sl.r * RY;
     if (sl.taken) { s += `<rect class="slotgap" x="${x + 3}" y="${y + 3}" width="94" height="134" rx="8"/>`; return; }
     const avail = Engine.slotAvailable(S, i);
     const canTake = legal.some(a => a.t === 'take' && a.slot === i);
     const forced = S.forced && S.forced.slot === i;
-    const cls = ['card', canTake || targ.has(i) || avail ? 'avail' : '', targ.has(i) ? 'target' : '', main && avail && !canTake ? 'dim' : ''].join(' ');
+    const cost = sl.face ? Engine.cardCost(S, who, sl.id) : null;
+    const tone = pick && pick.slot === i ? 'pick' : !cost ? '' : cost.chain ? 'chain' : cost.coins > purse ? 'cant' : '';
+    const cls = ['card', canTake || targ.has(i) || avail ? 'avail' : '', targ.has(i) ? 'target' : '', main && avail && !canTake ? 'dim' : '', tone].join(' ');
     let badge = '';
     if (sl.face && avail && main && canTake) {
       const c = Engine.cardCost(S, S.active, sl.id), afford = c.coins <= S.players[S.active].coins;
@@ -2031,7 +2114,11 @@ function pyramidSVG() {
     }
     if (forced) badge += `<g transform="translate(22,112)"><circle r="14" fill="#5b2c6f" stroke="#fff"/><text y="5" font-size="12" text-anchor="middle" fill="#fff">\u26A0</text></g>`;
     const dbg = UI.debug ? `<text x="50" y="104" font-size="11" text-anchor="middle" fill="#0f0" stroke="#000" stroke-width=".4">#${i} r${sl.r} i${sl.i} x${sl.x}</text>` : '';
-    s += `<g class="${cls}" data-a="slot" data-i="${i}" transform="translate(${x},${y})">${sl.face ? cardInner(sl.id) : cardBack(sl.power)}${badge}${dbg}</g>`;
+    const ring = {chain: '#2fe063', cant: '#e3342b', pick: '#ffd84a'}[tone];
+    const fil = {chain: 'gChain', cant: 'gCant', pick: 'gPick'}[tone];
+    const tag = tone === 'pick' ? `<g transform="translate(50,72)"><rect x="-46" y="-13" width="92" height="22" rx="11" fill="${SIDE_COL[pick.p]}" stroke="#fff" stroke-width="2"/><text y="3" font-size="11" text-anchor="middle" fill="#fff" font-weight="700">${esc(pname(S, pick.p)).slice(0, 10)} ${pick.mode === 'discard' ? 'discards' : 'plays'}</text></g>`
+      : tone === 'chain' ? `<g transform="translate(18,112)"><circle r="12" fill="#e9ffe9" stroke="#1f9a45" stroke-width="2"/><text y="4.5" font-size="12" text-anchor="middle">\u{1F517}</text></g>` : '';
+    s += `<g class="${cls}" data-a="slot" data-i="${i}" transform="translate(${x},${y})"${fil ? ` filter="url(#${fil})"` : ''}>${sl.face ? cardInner(sl.id) : cardBack(sl.power)}${ring ? `<rect width="100" height="140" rx="8" fill="none" stroke="${ring}" stroke-width="${tone === 'pick' ? 5 : 3.5}" pointer-events="none"/>` : ''}${badge}${forced ? '' : tag}${dbg}</g>`;
   });
   return `<svg viewBox="0 0 ${W} ${H}" preserveAspectRatio="xMidYMid meet" xmlns="http://www.w3.org/2000/svg">${s}</svg>`;
 }
@@ -2076,7 +2163,19 @@ function mapSVG() {
     if (UI.debug || UI.edit) s += `<text x="${R.x}" y="${R.y + 105}" font-size="14" text-anchor="middle" fill="#060">${R.id} (${R.x},${R.y})</text>`;
     s += `</g>`;
   }
+  s += clashesSVG(r => { const R = REGIONS.find(z => z.id === r); return [R.x, R.y]; });
   return `<svg viewBox="0 0 1000 700" preserveAspectRatio="xMidYMid meet" xmlns="http://www.w3.org/2000/svg">${s}</svg>`;
+}
+function clashesSVG(at, k = 1) {
+  const S = UI.S, light = ['#9cc3ff', '#ff9a8c'];
+  return UI.clashes.map(c => {
+    const [x, y] = at(c.r), w = c.after[0] ? 0 : c.after[1] ? 1 : -1;
+    const res = w < 0 ? 'Both wiped out' : `${pname(S, w)} holds ${c.after[w]}`;
+    return `<g transform="translate(${x},${y}) scale(${k})" pointer-events="none"><g class="clash"><circle r="62" fill="rgba(18,10,4,.82)" stroke="#ffd84a" stroke-width="4"/>
+      <text y="-20" font-size="30" text-anchor="middle">\u2694\uFE0F</text>
+      <text y="12" font-size="25" text-anchor="middle" font-weight="700"><tspan fill="${light[0]}">${c.before[0]}</tspan><tspan fill="#fff"> vs </tspan><tspan fill="${light[1]}">${c.before[1]}</tspan></text>
+      <text y="38" font-size="14" text-anchor="middle" font-weight="700" fill="${w < 0 ? '#ffe9a8' : light[w]}">${esc(res)}</text></g></g>`;
+  }).join('');
 }
 // The board photo already shows regions and paths; draw only outlines, pieces and markers, in BOARD coordinates.
 function boardArtSVG(targ) {
@@ -2104,9 +2203,31 @@ function boardArtSVG(targ) {
     if (UI.debug || UI.edit) s += `<text x="${x}" y="${y + B.dy + B.h + 16}" font-size="14" text-anchor="middle" fill="#060" stroke="#fff" stroke-width=".5">${R.id} (${x},${y})</text>`;
     s += `</g>`;
   }
+  s += clashesSVG(r => BOARD.at[r], BOARD.w / 1000);
   return `<svg class="boardart" viewBox="0 0 ${BOARD.w} ${BOARD.h}" preserveAspectRatio="xMidYMid meet" xmlns="http://www.w3.org/2000/svg">${s}</svg>`;
 }
+// Quest spaces 0..14 on the strip photo (fractions of its width), Shire left, Mount Doom right.
+const QUEST_ART_X = [.1641, .225, .2854, .3453, .4047, .4636, .5221, .58, .6374, .6943, .7507, .8066, .862, .9169, .9713];
+function questArtSVG() {
+  const S = UI.S, W = 620, SH = W * 639 / 3685, X = i => QUEST_ART_X[i] * W;
+  const lab = (p, y) => `<text x="6" y="${y}" font-size="13" font-weight="700" fill="${SIDE_COL[p]}">${p ? 'Nazg\u00fbl hunting Frodo' : 'Frodo & Sam to Mount Doom'} \u00B7 ${S.players[p].quest}/14${S.questBlock[p] ? ` \u00B7 \u26A1${S.questBlock[p]} blocking` : ''}</text>`;
+  const strip = (y, h, vy) => `<svg x="0" y="${y}" width="${W}" height="${h}" viewBox="0 ${vy} ${W} ${h}" preserveAspectRatio="none"><image href="${ART['Q:strip']}" width="${W}" height="${SH}" preserveAspectRatio="none"/></svg>`;
+  const cy0 = 16 + SH * .8, band = 46, y1 = 16 + SH + 20, cy1 = y1 + band / 2;
+  let s = `<defs><filter id="qglow" x="-40%" y="-40%" width="180%" height="180%"><feDropShadow dx="0" dy="0" stdDeviation="2.2" flood-color="#fff" flood-opacity=".95"/></filter>
+    <filter id="qsh" x="-40%" y="-40%" width="180%" height="180%"><feDropShadow dx="0" dy="1.5" stdDeviation="1.8" flood-color="#000" flood-opacity=".8"/></filter></defs>`;
+  s += lab(0, 12) + `<g>${strip(16, SH, 0)}</g>`;
+  s += lab(1, y1 - 4) + `<g>${strip(y1, band, SH * .8 - band / 2)}<rect x="0" y="${y1}" width="${W}" height="${band}" fill="rgba(15,12,20,.45)"/></g>`;
+  [0, 1].forEach(p => {
+    const P = S.players[p], cy = p ? cy1 : cy0;
+    for (let i = 1; i <= P.quest && i <= 14; i++) s += `<circle cx="${X(i)}" cy="${cy}" r="9.5" fill="${SIDE_COL[p]}" fill-opacity=".55" stroke="#fff" stroke-width="1.2"/>`;
+    const q = Math.min(P.quest, 14);
+    s += p ? `<image href="${ART['Q:nazgul']}" x="${X(q) - 15}" y="${cy - 26}" width="30" height="40" filter="url(#qglow)"/>`
+      : `<image href="${ART['Q:ring']}" x="${X(q) - 26}" y="${cy - 26}" width="52" height="31" filter="url(#qsh)"/>`;
+  });
+  return `<svg class="quest qart" viewBox="0 0 ${W} ${y1 + band + 2}" preserveAspectRatio="xMidYMid meet" xmlns="http://www.w3.org/2000/svg">${s}</svg>`;
+}
 function questSVG() {
+  if (art('Q:strip') && art('Q:ring') && art('Q:nazgul')) return questArtSVG();
   const S = UI.S, X = i => 22 + i * 41;
   const bonusIcon = (i, y) => {
     const b = QUEST_BONUS[i];
@@ -2141,7 +2262,7 @@ function tilesHTML() {
     const T = TILES[t], ok = legal.some(a => a.t === 'tile' && a.tile === t) || targ.has(t);
     const c = Engine.tileCost(S, S.active, t), locked = S.tileLocks.includes(t);
     const img = art('T:' + t);
-    return `<button class="tile ${ok ? 'legal' : ''} ${T.fan ? 'fan' : ''} ${locked ? 'locked' : ''} ${img ? 'art' : ''}" data-a="tile" data-t="${t}"${img ? ` style="background-image:linear-gradient(rgba(20,14,8,.15),rgba(20,14,8,.78)),url(${img})"` : ''}>
+    return `<button class="tile ${ok ? 'legal' : ''} ${T.fan ? 'fan' : ''} ${locked ? 'locked' : ''} ${img ? 'art' : ''} ${UI.aiPick && UI.aiPick.tile === t ? 'aipick' : ''}" data-a="tile" data-t="${t}"${img ? ` style="background-image:linear-gradient(rgba(20,14,8,.15),rgba(20,14,8,.78)),url(${img})"` : ''}>
       <span class="tc">${main ? `<svg width="22" height="22" viewBox="-11 -11 22 22">${coinSVG(0, 0, c.coins, 10)}</svg>` : ''}</span>
       <div class="tn">${esc(T.name)}</div>
       <div class="ts">${skillStr(T.skills.split(' '))}</div>
@@ -2165,8 +2286,8 @@ function playerHTML(p) {
   const colors = {}; for (const id of P.cards) colors[CARDS[id].color] = (colors[CARDS[id].color] || 0) + 1;
   const left = QUEST_LEN - P.quest;
   let h = `<div class="player p${p} ${S.active === p && !S.winner ? 'active' : ''}"><h3><span>${esc(pname(S, p))} <small class="muted">${SIDE_NAMES[SIDES[p]]}${seat(p).type === 'ai' ? ` \u00B7 AI ${seat(p).level}` : ''}</small></span><span>${S.active === p && !S.winner ? '\u25B6' : ''}</span></h3>
-    <div class="stats"><div><b>${P.coins}</b>Coins</div><div><b>${P.quest}/14</b>Quest</div><div><b>${Engine.regionCount(S, p)}/7</b>Regions</div><div><b>${Engine.distinctRaces(P)}/6</b>Races</div></div>
-    <div class="sub2"><span class="muted">Supply:</span> ${P.units} Units \u00B7 ${P.forts} Fortresses${S.opts.allies ? ` \u00B7 \u26A1 ${P.power} Power` : ''}</div>
+    <div class="stats"><div class="coinstat"><b><svg width="20" height="20" viewBox="-10 -10 20 20">${coinSVG(0, 0, '', 9)}</svg>${P.coins}</b>Coins</div><div><b>${P.quest}/14</b>Quest</div><div><b>${Engine.regionCount(S, p)}/7</b>Regions</div><div><b>${Engine.distinctRaces(P)}/6</b>Races</div></div>
+    <div class="sub2"><span class="muted">Supply:</span> ${P.units} Units \u00B7 ${P.forts} <button class="linkbtn" data-a="explain" data-k="forts">Fortresses \u24D8</button>${S.opts.allies ? ` \u00B7 \u26A1 ${P.power} Power` : ''}</div>
     <div class="sub2"><span class="muted">Races:</span><div class="chips">${RACES.map(r => `<span class="chip ${races.has(r) ? '' : 'miss'}" title="${RACE_NAMES[r]}">${RACE_ICON[r]} ${greens(P).filter(x => x === r).length || ''}</span>`).join('')}${hasHook(P, 'eagle') ? `<span class="chip">${RACE_ICON.eagle}</span>` : ''}</div></div>
     <div class="sub2"><span class="muted">Skills:</span> ${SKILLS.map(k => t[k] ? `${SKILL_ICON[k]}\u00D7${t[k]}` : '').filter(Boolean).join(' ') || '\u2014'}${ch.map(g => ` [${g.map(k => SKILL_ICON[k]).join('/')}]`).join('')}${hasHook(P, 'wildSkill') ? ' +1 any' : ''}</div>
     <div class="sub2"><span class="muted">Cards:</span> ${COLORS.map(c => colors[c] ? `<span class="cc" style="background:${CFILL[c]}"></span>${colors[c]}` : '').filter(Boolean).join(' ') || '\u2014'}
@@ -2175,7 +2296,7 @@ function playerHTML(p) {
   if (P.tokens.length) h += `<div class="sub2"><span class="muted">Alliance tokens:</span>${P.tokens.map(k => `<div class="chip" style="display:block;border-radius:8px;margin-top:3px">${RACE_ICON[TOKENS[k].race]} ${esc(TOKENS[k].text)}</div>`).join('')}</div>`;
   if (S.opts.allies) {
     const A = P.allies, acts = myTurn() && actor(S) === p && !S.pending ? Engine.allyActions(S, p) : [];
-    h += `<div class="sub2"><span class="muted">Allies:</span>`;
+    h += `<div class="sub2"><button class="linkbtn" data-a="explain" data-k="allies">Allies \u24D8</button> <span class="muted">${P.power ? `${P.power}\u26A1: call one for 1, send one away for 2` : 'Gain \u26A1 by revealing cards with a Power token'}</span>`;
     for (const a of A.front) {
       const can = acts.some(x => x.a === a && x.mode === 'exit');
       h += `<div class="ally">${allyImg(a)}<b>${esc(ALLIES[a].name)}</b> <span class="muted">(in play)</span><div>Exit: ${esc(ALLIES[a].xt)}</div>${can ? `<button data-a="ally" data-ally="${a}" data-mode="exit" class="lock">Send away (2\u26A1)</button>` : ''}</div>`;
@@ -2189,6 +2310,58 @@ function playerHTML(p) {
     h += `</div>`;
   }
   return h + `<div class="muted" style="font-size:12px;margin-top:4px">${p ? `The Nazg\u00fbl need ${left} more` : `Frodo needs ${left} more`} Quest space${left === 1 ? '' : 's'}.</div></div>`;
+}
+
+function stacksHTML() {
+  const S = UI.S;
+  return `<div class="player stacks"><h3><span>Race alliances <button class="linkbtn" data-a="explain" data-k="alliances">\u24D8</button></span></h3>
+    <div class="stackrow">${RACES.map(r => `<button class="stack ${S.stacks[r].length ? '' : 'empty'}" data-a="stack" data-r="${r}" title="${RACE_NAMES[r]}: tap to preview">
+      <span class="si">${RACE_ICON[r]}</span><span class="sn">${RACE_NAMES[r]}</span><span class="sc">${S.stacks[r].length} left${S.stackLocks.includes(r) ? ' \u{1F512}' : ''}</span></button>`).join('')}</div>
+    <div class="muted" style="font-size:12px">Tap a stack to see which powers you might draw.</div></div>`;
+}
+function showStack(r) {
+  const S = UI.S, st = S.stacks[r], known = st.filter(t => t.known), hidden = st.filter(t => !t.known);
+  const all = Object.keys(TOKENS).filter(t => TOKENS[t].race === r);
+  const holder = t => [0, 1].find(p => S.players[p].tokens.includes(t));
+  const li = (t, note) => `<li>${esc(TOKENS[t].text)}${note ? ` <span class="muted">${note}</span>` : ''}</li>`;
+  modal({title: `${RACE_ICON[r]} ${RACE_NAMES[r]} Alliance tokens`, body: `
+    <p>${st.length} of ${all.length} left${S.stackLocks.includes(r) ? ' \u00B7 \u{1F512} locked by Shelob for the Fellowship' : ''}.</p>
+    ${known.length ? `<p><b>Known, on top:</b></p><ul>${known.map(t => li(t.id)).join('')}</ul>` : ''}
+    ${hidden.length ? `<p><b>You might draw</b> (order hidden):</p><ul>${hidden.map(t => li(t.id)).join('')}</ul>` : ''}
+    ${all.filter(t => !st.some(x => x.id === t)).length ? `<p><b>Already taken:</b></p><ul>${all.filter(t => !st.some(x => x.id === t)).map(t => li(t, holder(t) === undefined ? '(discarded)' : `(${esc(pname(S, holder(t)))})`)).join('')}</ul>` : ''}
+    <p class="muted">You draw from this stack when you play your 2nd Green ${RACE_NAMES[r]} card (draw 2, keep 1), or when you first have 3 different Races (1 from each of those stacks, keep 1).</p>`});
+}
+const EXPLAIN = {
+  forts: ['Fortresses', `<p>A Fortress is <b>permanent presence</b> in its region: you count as present there even with no Units, and enemy Units cannot remove it.</p>
+    <ul><li>Presence counts toward <b>Conquest of Middle-earth</b> (all 7 regions wins at once) and the <b>region count</b> that decides the game after chapter 3.</li>
+    <li>You place one when you build a <b>Landmark</b> (in that Landmark's region).</li>
+    <li>Each of your Fortresses already on the board makes your next Landmark cost <b>1 more Coin</b>.</li>
+    <li>Quest space 12 and some tokens and tiles (Ents, Grond) remove an enemy Fortress.</li></ul>`],
+  allies: ['How Allies work', `<p>With the Allies module each side holds <b>hidden Ally cards</b> and gathers <b>\u26A1 Power</b>.</p>
+    <ul><li><b>Gain Power:</b> some facedown cards carry a \u26A1 token. Whoever takes the card that reveals it gains the token.</li>
+    <li><b>Call an Ally (1\u26A1):</b> on your turn, before or after your main action, reveal a hidden Ally and apply its <b>Enter</b> effect. It stays in play.</li>
+    <li><b>Send it away (2\u26A1):</b> later, apply its <b>Exit</b> effect (usually stronger). Then it is gone.</li>
+    <li>At most one Ally action per turn. Ally actions reveal information, so they cannot be undone.</li></ul>
+    <p class="muted">Your hidden Allies are listed in your panel with their effects; your opponent only sees how many you hold.</p>`],
+  alliances: ['Race alliances', `<p>Each Race has a stack of 3 Alliance tokens with powers.</p>
+    <ul><li><b>2 matching:</b> your 2nd Green card of a Race lets you draw 2 tokens of that Race and keep 1.</li>
+    <li><b>3 different:</b> the first time you have 3 different Races, draw 1 token from each of 3 of them and keep 1.</li>
+    <li>Wizards and Ents tokens act once when taken; the others are lasting powers.</li></ul>`],
+  victory: ['Three ways to win', ''],
+};
+function showExplain(k) {
+  if (k === 'victory') return showVictory();
+  const [title, body] = EXPLAIN[k];
+  modal({title, body});
+}
+function showVictory() {
+  const S = UI.S, me = viewer(), row = (icon, name, max, f, how) => `<div class="vrow"><div class="vh">${icon} <b>${name}</b> <span class="muted">reach ${max}</span></div>
+    ${[me, opp(me)].map(p => `<div class="vbar"><span class="vn" style="color:${SIDE_COL[p]}">${esc(pname(S, p))}</span><span class="vtrack"><i style="width:${Math.min(100, f(p) / max * 100)}%;background:${SIDE_COL[p]}"></i></span><b>${f(p)}/${max}</b></div>`).join('')}
+    <div class="muted" style="font-size:13px">${how}</div></div>`;
+  modal({title: 'Three ways to win', body: `<p>The first side to complete any one track wins at once. If nobody does, after chapter 3 the side present in more regions wins.</p>
+    ${row('\u{1F48D}', 'Quest of the Ring', 14, p => S.players[p].quest, 'Blue cards move your figure. The Fellowship walks to Mount Doom; the Nazg\u00fbl hunt them.')}
+    ${row('\u{1F9DD}', 'Support of the Races', 6, p => Engine.distinctRaces(S.players[p]), 'Play Green cards of 6 different Races (the Eagle token counts as one).')}
+    ${row('\u{1F5FA}\uFE0F', 'Conquest of Middle-earth', 7, p => Engine.regionCount(S, p), 'Be present (Units or a Fortress) in all 7 regions. Red cards place Units; Landmarks place Fortresses.')}`});
 }
 
 // ---------- prompt / action bar ----------
@@ -2221,7 +2394,9 @@ function promptHTML() {
     }
     h += `</div>`;
   } else if (!S.mainDone) {
-    h += `<div class="msg">Take an available card (play or discard it), or build a Landmark.${S.forced && S.forced.p === S.active ? ' <b>Gr\u00edma: you must take the marked card.</b>' : ''}</div>`;
+    const allyNow = UI.autoEnd && Engine.allyActions(S, S.active).length;
+    h += `<div class="msg">Take an available card (play or discard it), or build a Landmark. You have <b class="coinword">${S.players[S.active].coins} Coin${S.players[S.active].coins === 1 ? '' : 's'}</b>.${S.forced && S.forced.p === S.active ? ' <b>Gr\u00edma: you must take the marked card.</b>' : ''}${allyNow ? ' <span class="muted">Call an Ally first if you want: your turn ends after your main action.</span>' : ''}</div>
+      <div class="legend"><span class="lg chain">\u{1F517} free by chaining</span><span class="lg cant">too expensive</span></div>`;
   } else {
     h += `<div class="msg">Main action done. You may still call or send away an Ally, then end your turn.</div>`;
   }
@@ -2241,18 +2416,23 @@ function sideBody() {
   if (UI.tab === 'journal') return journalHTML();
   if (UI.tab === 'intel') return intelHTML();
   const me = viewer();
-  return playerHTML(opp(me)) + playerHTML(me);
+  return playerHTML(me) + playerHTML(opp(me)) + stacksHTML();
 }
 
 // ---------- full render ----------
 function renderGame() {
   const S = UI.S, app = $('#app');
   const keepScroll = $('.tabbody') ? $('.tabbody').scrollTop : 0;
-  const pill = p => { const P = S.players[p]; return `<span class="pill ${S.active === p && !S.winner ? 'active' : ''}" title="${esc(pname(S, p))}: Coins, Quest, Regions, Races"><span class="dot" style="background:${SIDE_COL[p]}"></span>${P.coins}\u25CF ${P.quest}/14\u{1F48D} ${Engine.regionCount(S, p)}/7 ${Engine.distinctRaces(P)}/6</span>`; };
+  const me = viewer(), them = opp(me);
+  const track = (icon, name, max, f) => `<span class="vt1" title="${name}: first to ${max} wins"><span class="vti">${icon}</span><span class="vtl">${name}</span>
+    <span class="vtb">${[me, them].map(p => `<span class="vtk"><i style="width:${Math.min(100, f(p) / max * 100)}%;background:${SIDE_COL[p]}"></i></span>`).join('')}</span>
+    <span class="vtn"><b style="color:${SIDE_COL[me]}">${f(me)}</b>\u00B7<b style="color:${SIDE_COL[them]}">${f(them)}</b><small>/${max}</small></span></span>`;
+  const tracker = `<button class="vt" data-a="explain" data-k="victory" title="Three ways to win: tap for details">${track('\u{1F48D}', 'Quest', 14, p => S.players[p].quest)}${track('\u{1F9DD}', 'Races', 6, p => Engine.distinctRaces(S.players[p]))}${track('\u{1F5FA}\uFE0F', 'Regions', 7, p => Engine.regionCount(S, p))}</button>`;
+  const coin = (p, big) => `<span class="coinchip ${big ? 'big' : ''} ${S.active === p && !S.winner ? 'active' : ''}" title="${esc(pname(S, p))}: ${S.players[p].coins} Coins"><svg width="${big ? 22 : 16}" height="${big ? 22 : 16}" viewBox="-10 -10 20 20">${coinSVG(0, 0, '', 9)}</svg><b>${S.players[p].coins}</b><small>${humans().length === 1 && isHuman(p) ? 'You' : esc(pname(S, p)).slice(0, 9)}</small></span>`;
   const disc = S.discard.length;
   app.innerHTML = `<div id="game" class="${UI.anim ? '' : 'noanim'}">
     <div class="top"><button data-a="menu" title="Menu">\u2630</button><span class="title">LOTR Duel</span>
-      <span class="pills"><span class="pill chpill">Ch ${S.chapter}</span>${pill(0)}${pill(1)}</span><span class="spacer"></span>
+      <span class="pill chpill">Ch ${S.chapter}</span>${tracker}${coin(me, true)}${coin(them, false)}<span class="spacer"></span>
       <button data-a="discard" title="Discard pile">\u{1F5D1} ${disc}</button><button data-a="mute" title="Sound">${UI.mute ? '\u{1F507}' : '\u{1F50A}'}</button><button data-a="help" title="How to play">?</button></div>
     <div class="main show-${UI.view}">
       <div class="tabsbar"><button class="${UI.view === 'cards' ? 'on' : ''}" data-a="view" data-v="cards">Cards &amp; Landmarks</button><button class="${UI.view === 'map' ? 'on' : ''}" data-a="view" data-v="map">Middle-earth</button></div>
@@ -2348,11 +2528,22 @@ document.addEventListener('keydown', e => { if (e.key === 'Escape' && UI.modal &
 // ---------- committing actions ----------
 function logKinds(a, b) { return new Set(b.log.slice(a.log.length).map(l => l.kind)); }
 function commit(a, human) {
-  const prev = UI.S, N = Engine.apply(prev, a);
+  const prev = UI.S;
+  let N = Engine.apply(prev, a), irrev = N.irrev;
+  if (human && UI.autoEnd && !N.winner && !N.pending && !N.queue.length && N.mainDone && N.turnNo === prev.turnNo && Engine.legalActions(N).some(x => x.t === 'end')) {
+    N = Engine.apply(N, {t: 'end'}); irrev = irrev || N.irrev;
+  }
   if (human) UI.undo.push(prev); else UI.undo = [];
-  if (N.irrev) UI.undo = [];
+  if (irrev) UI.undo = [];
   UI.S = N; UI.sel = null;
   for (const r of REGION_IDS) if (JSON.stringify(prev.board[r]) !== JSON.stringify(N.board[r])) UI.flash.add(r);
+  const clashes = N.log.slice(prev.log.length).filter(l => l.kind === 'conflict' && l.r);
+  if (clashes.length && !UI.auto && !UI.freeze) {
+    const t = Date.now();
+    UI.clashes.push(...clashes.map(l => ({r: l.r, before: l.before, after: l.after, t})));
+    setTimeout(() => { UI.clashes = UI.clashes.filter(c => c.t !== t); }, 3400);
+    toast(clashes.map(l => '\u2694\uFE0F ' + l.text).join('\n'), 3400);
+  }
   const k = logKinds(prev, N);
   Sound(k.has('win') ? 'win' : k.has('chapter') ? 'chapter' : k.has('conflict') ? 'clash' : k.has('token') ? 'token' : k.has('quest') ? 'quest' : k.has('units') ? 'unit' : k.has('coins') ? 'coin' : 'card');
   if (k.has('chapter') && !UI.auto) toast(`Chapter ${N.chapter}`);
@@ -2375,12 +2566,34 @@ function next() {
   if (S.winner) { finishGame(); return; }
   const p = actor(S);
   if (!isHuman(p)) {
+    const D = UI.freeze ? [0, 0] : !UI.anim ? [400, 120] : AI_SPEED[UI.aiSpeed] || AI_SPEED.slow;
     UI.timer = setTimeout(() => {
       if (gen !== UI.gen) return;
       const a = AI.decide(UI.S, seat(p).level);
-      commit(a, false);
-    }, UI.freeze ? 0 : UI.anim ? 650 : 120);
+      if (!D[0] || UI.auto || !humans().length || (a.t !== 'take' && a.t !== 'tile')) return commit(a, false);
+      UI.aiPick = a.t === 'take' ? {slot: a.slot, mode: a.mode, p} : {tile: a.tile, p};
+      if (matchMedia('(max-width: 759px)').matches) UI.view = 'cards';
+      renderGame();
+      aiAnnounce(UI.S, p, a, D[0] * 2.2);
+      UI.timer = setTimeout(() => { if (gen !== UI.gen) return; UI.aiPick = null; commit(a, false); }, D[0]);
+    }, D[1]);
   } else if (pnp() && UI.viewer !== p) showPass(p);
+}
+// [pause showing the AI's chosen card, pause before each AI step] in ms
+const AI_SPEED = {slow: [2000, 900], normal: [1100, 650], fast: [450, 250]};
+function aiAnnounce(S, p, a, ms) {
+  const old = $('.aiplay'); if (old) old.remove();
+  const d = document.createElement('div');
+  d.className = 'aiplay';
+  d.style.borderColor = SIDE_COL[p];
+  if (a.t === 'take') {
+    const id = S.slots[a.slot].id;
+    d.innerHTML = `${cardSVGfull(id, 58)}<div><b style="color:${SIDE_COL[p]}">${esc(pname(S, p))}</b> ${a.mode === 'discard' ? 'discards' : 'plays'}<br>${esc(Engine.cardLabel(id))}</div>`;
+  } else {
+    d.innerHTML = `${art('T:' + a.tile) ? `<img src="${ART['T:' + a.tile]}" alt="" width="58">` : '\u{1F3F0}'}<div><b style="color:${SIDE_COL[p]}">${esc(pname(S, p))}</b> builds<br>${esc(TILES[a.tile].name)}</div>`;
+  }
+  document.body.appendChild(d);
+  setTimeout(() => d.remove(), ms);
 }
 function showPass(p) {
   const d = document.createElement('div'); d.className = 'pass';
@@ -2422,6 +2635,8 @@ document.addEventListener('click', e => {
     case 'sheet': UI.sheetMin = !UI.sheetMin; return renderGame();
     case 'fit': UI.zoom[el.dataset.z] = {s: 1, x: 0, y: 0}; return renderGame();
     case 'mute': UI.mute = !UI.mute; store.set('mute', UI.mute); return renderGame();
+    case 'explain': return showExplain(el.dataset.k);
+    case 'stack': return showStack(el.dataset.r);
     case 'menu': return showMenu();
     case 'help': return showHelp();
     case 'discard': return showDiscard();
@@ -2508,6 +2723,8 @@ function showDiscard() {
 function showMenu() {
   modal({title: 'Menu', body: `<label class="check"><input type="checkbox" id="m-anim" ${UI.anim ? 'checked' : ''}> Animations</label>
     <label class="check"><input type="checkbox" id="m-mute" ${UI.mute ? '' : 'checked'}> Sound</label>
+    <label class="check"><input type="checkbox" id="m-autoend" ${UI.autoEnd ? 'checked' : ''}> End my turn automatically after my main action</label>
+    <label class="check">Opponent speed <select id="m-speed">${['slow', 'normal', 'fast'].map(v => `<option value="${v}" ${UI.aiSpeed === v ? 'selected' : ''}>${v[0].toUpperCase() + v.slice(1)}</option>`).join('')}</select></label>
     ${hasArt() ? `<label class="check"><input type="checkbox" id="m-art" ${UI.art ? 'checked' : ''}> Photo art: cards and board (off: clear icons)</label>` : ''}
     <p class="muted">Seed ${UI.S.seed} \u00B7 Fan tiles ${UI.S.opts.fan ? 'on' : 'off'} \u00B7 Allies ${UI.S.opts.allies ? 'on' : 'off'}</p>
     <p class="muted">LOTR Duel v${APP_VERSION}</p>`,
@@ -2517,6 +2734,8 @@ function showMenu() {
   }}]});
   $('#m-anim').onchange = e => { UI.anim = e.target.checked; store.set('anim', UI.anim); renderGame(); };
   $('#m-mute').onchange = e => { UI.mute = !e.target.checked; store.set('mute', UI.mute); renderGame(); };
+  $('#m-autoend').onchange = e => { UI.autoEnd = e.target.checked; store.set('autoEnd', UI.autoEnd); };
+  $('#m-speed').onchange = e => { UI.aiSpeed = e.target.value; store.set('aiSpeed', UI.aiSpeed); };
   if (hasArt()) $('#m-art').onchange = e => { UI.art = e.target.checked; store.set('art', UI.art); renderGame(); };
 }
 function showChangelog() {
@@ -2568,6 +2787,9 @@ function showHelp() {
     <li><b>Build a Landmark</b>: pay its Skills plus 1 Coin per Fortress you already have on the board. Place a Fortress in its region and apply its effect.</li></ul>
     <p>Card colours: <span class="cc" style="background:${CFILL.grey}"></span>Skills, <span class="cc" style="background:${CFILL.yellow}"></span>Coins, <span class="cc" style="background:${CFILL.blue}"></span>Quest, <span class="cc" style="background:${CFILL.green}"></span>Races (2 matching or 3 different Races give Alliance tokens), <span class="cc" style="background:${CFILL.red}"></span>Units in one of two regions, <span class="cc" style="background:${CFILL.purple}"></span>Chapter 3 tactics.</p>
     <p>Units of both sides in the same region fight 1 for 1. Quest spaces 3, 6, 9, 12 give a Coin, a Unit, another turn and the removal of an enemy Fortress.</p>
+    <p><b>Fortresses</b> come from Landmarks. A Fortress keeps you present in its region even with no Units, which counts for Conquest and the final region count; each one you own adds 1 Coin to your next Landmark.</p>
+    <p><b>Allies</b> (optional): gain \u26A1 Power by revealing cards with a Power token, spend 1\u26A1 to call a hidden Ally (Enter effect) and 2\u26A1 to send it away (Exit effect), one Ally action per turn.</p>
+    <p>In the card layout, a <b style="color:#1f9a45">green glow</b> marks cards you can chain for free and a <b style="color:#c0302a">red glow</b> cards you cannot afford. The top bar tracks the three ways to win: tap it for details.</p>
     <p><b>Win at once</b> by reaching the end of the Quest (14 spaces), by gathering 6 different Race symbols, or by being present in all 7 regions. Otherwise, after chapter 3 the side present in more regions wins.</p>
     <p>Skills: ${SKILLS.map(k => `${SKILL_ICON[k]} ${SKILL_NAMES[k]}`).join(' \u00B7 ')}. Races: ${RACES.map(r => `${RACE_ICON[r]} ${RACE_NAMES[r]}`).join(' \u00B7 ')}.</p>
     <p class="muted">\u{1F512} on a button: that action reveals hidden information and cannot be undone.</p>
@@ -2690,8 +2912,14 @@ function runFreeze() {
     commit(AI.decide(UI.S, 'easy'), false);
   UI.auto = false;
   if (Q.get('tab')) UI.tab = Q.get('tab');
+  autoView();
   if (Q.get('view')) UI.view = Q.get('view');
-  autoView(); renderGame();
+  renderGame();
+  if (Q.has('live')) {
+    UI.freeze = false; UI.anim = true;
+    const a = Engine.legalActions(UI.S).find(x => x.t === 'take' && x.mode === Q.get('live')) || Engine.legalActions(UI.S).find(x => x.t === 'take');
+    if (a) commit(a, true);
+  }
   const pop = Q.get('popup');
   if (pop === 'help') showHelp();
   if (pop === 'card') { const i = Engine.availableSlots(UI.S).find(k => UI.S.slots[k].face); if (i !== undefined) onSlot(i); }
