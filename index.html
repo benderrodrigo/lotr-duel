@@ -31,7 +31,6 @@ button:disabled { opacity: .45; cursor: default; }
 button.primary { background: #3d2f1f; color: #fff5dc; border-color: #3d2f1f; }
 button.primary:hover { background: #57432c; }
 button.ghost { background: transparent; }
-.lock::after { content: " \1F512"; font-size: .8em; }
 h1, h2, h3 { font-family: Georgia, "Palatino Linotype", serif; margin: .2em 0 .4em; }
 a { color: #6a3e12; }
 .muted { color: var(--muted); }
@@ -136,6 +135,7 @@ svg.quest { width: 100%; max-height: 170px; height: auto; display: block; flex: 
   padding: 5px 6px; font-size: 12px; cursor: pointer; position: relative; text-align: left; min-height: 0; }
 .tile.legal { border-color: var(--gold); box-shadow: 0 0 0 2px var(--gold2); }
 .tile.locked { opacity: .55; }
+.tile.cant { border-color: #c0302a; box-shadow: 0 0 0 2px rgba(192,48,42,.55), 0 0 12px rgba(192,48,42,.55); }
 .tile .tn { font-weight: 700; font-family: Georgia, serif; font-size: 13px; }
 .tile .ts { letter-spacing: 1px; }
 .tile .tc { position: absolute; right: 4px; bottom: 3px; }
@@ -198,6 +198,11 @@ svg.quest { width: 100%; max-height: 170px; height: auto; display: block; flex: 
 .chips { display: flex; flex-wrap: wrap; gap: 4px; margin-top: 3px; }
 .chip { font-size: 12px; padding: 1px 7px; border-radius: 999px; background: var(--parch); border: 1px solid var(--line); }
 .chip.miss { opacity: .35; }
+button.chip { min-height: 0; line-height: 1.4; font-size: 12px; padding: 1px 7px; color: var(--ink); }
+button.chip:hover { border-color: var(--gold); opacity: 1; }
+.allypic { float: left; padding: 0; border: 0; background: none; min-height: 0; margin: 0 6px 2px 0; border-radius: 4px; cursor: zoom-in; }
+.allypic .allyimg { float: none; display: block; margin: 0; }
+.allypic:hover .allyimg { box-shadow: 0 0 0 2px var(--gold2); }
 .cc { display: inline-block; width: 12px; height: 12px; border-radius: 3px; vertical-align: -1px; margin-right: 3px; }
 .ally { border: 1px dashed var(--line); border-radius: 8px; padding: 4px 6px; margin-top: 4px; font-size: 13px; }
 .ally b { font-family: Georgia, serif; }
@@ -287,6 +292,15 @@ svg .kcur { outline: none; }
 .twait { color: #8a6414; font-weight: 700; } .tdone { color: #1f7a3a; font-weight: 700; }
 .tourhint { margin: 10px 0 0; padding: 6px 10px; border-radius: 10px; background: rgba(184,137,44,.15); border: 1px dashed var(--gold); font-size: 13px; }
 .intel li { margin: 4px 0; }
+.intel { padding-left: 0; list-style: none; }
+.intel li:not(.iwin) { padding-left: 4px; }
+.intel li:not(.iwin)::before { content: "\2022  "; color: var(--muted); }
+.intel .iwin { border: 1px solid var(--line); border-radius: 10px; padding: 6px 8px; background: rgba(255,255,255,.35); font-size: 13px; }
+.intel .iwin.closest { border-color: #c0302a; box-shadow: 0 0 0 1px #c0302a; }
+.intel .ih { display: flex; gap: 6px; align-items: baseline; }
+.intel .ih span { margin-left: auto; font-size: 12px; color: var(--muted); }
+.intel .iwin.closest .ih span { color: #a42a2a; font-weight: 700; }
+.intel .rvb { display: block; margin: 4px 0; }
 
 /* modal */
 .backdrop { position: fixed; inset: 0; background: rgba(20,14,8,.55); z-index: 50; display: grid; place-items: center; padding: 10px; }
@@ -662,8 +676,15 @@ const ALLIES = {
 const SETS = {base: 'Base game', fan: 'Fan tiles: The Shire and Grond', allies: 'Allies expansion'};
 
 // ===== Rules engine: state in, legal actions and new state out. No DOM access. =====
-const APP_VERSION = '0.7';
+const APP_VERSION = '0.8';
 const CHANGELOG = [
+  {v: '0.8', date: '2026-11-01', items: [
+    'Ally popups show both the Enter and the Exit effect, explain that an Ally can only be sent away once it is in play, and say why an action is not available.',
+    'Tap an Ally\u2019s picture (or name) in the sidebar to open its popup.',
+    'Removed the lock icon from buttons; the preview and help say in words which actions cannot be undone.',
+    'Landmarks you cannot afford get a red border, like cards.',
+    'Rival intel lists the three victory tracks with progress bars, closest to winning first.',
+    'Tap a Race in a player summary for a short popup naming the Race and how it counts.']},
   {v: '0.7', date: '2026-10-31', items: [
     'Move previews: hover a card, Landmark or region (or move the keyboard cursor onto it) to see exactly what playing, discarding or building would change.',
     'Keyboard shortcuts: Space ends the turn, Z undoes, 1-9 pick choices, arrow keys move a cursor, Enter opens, P / D play or discard, ? lists them all.',
@@ -1605,21 +1626,21 @@ const AI = (() => {
   // ---- rival intel: non-invasive hints about the opponent of `viewer` ----
   function intel(S, viewer) {
     const o = opp(viewer), P = S.players[o], name = (S.seats[o] && S.seats[o].name) || SIDE_NAMES[SIDES[o]];
-    const out = [];
+    // Victory tracks first, closest to winning on top: {k, frac, left, text}; then other hints as {text}.
     const left = QUEST_LEN - P.quest;
-    out.push(o === 0 ? `Frodo and Sam are ${left} space${left === 1 ? '' : 's'} from Mount Doom.` : `The Nazg\u00fbl are ${left} space${left === 1 ? '' : 's'} from catching Frodo and Sam.`);
     const have = new Set(greens(P));
     const missing = RACES.filter(r => !have.has(r)).map(r => RACE_NAMES[r]);
-    out.push(`${name} has ${E.distinctRaces(P)} of 6 Race symbols${missing.length && missing.length < 6 ? ` (missing ${missing.join(', ')}${hasHook(P, 'eagle') ? '; has the Eagle' : ''})` : ''}.`);
-    const absent = REGION_IDS.filter(r => !E.present(S, o, r)).map(rname);
-    out.push(`${name} is present in ${7 - absent.length} of 7 regions${absent.length && absent.length < 4 ? ` (not in ${absent.join(', ')})` : ''}.`);
+    const races = E.distinctRaces(P), absent = REGION_IDS.filter(r => !E.present(S, o, r)).map(rname);
+    const wins = [
+      {k: 'quest', frac: P.quest / QUEST_LEN, left, text: o === 0 ? `Frodo and Sam are ${left} space${left === 1 ? '' : 's'} from Mount Doom.` : `The Nazg\u00fbl are ${left} space${left === 1 ? '' : 's'} from catching Frodo and Sam.`},
+      {k: 'races', frac: races / 6, left: 6 - races, text: `${name} has ${races} of 6 Race symbols${missing.length && missing.length < 6 ? ` (missing ${missing.join(', ')}${hasHook(P, 'eagle') ? '; has the Eagle' : ''})` : ''}.`},
+      {k: 'conquest', frac: (7 - absent.length) / 7, left: absent.length, text: `${name} is present in ${7 - absent.length} of 7 regions${absent.length && absent.length < 4 ? ` (not in ${absent.join(', ')})` : ''}.`}];
+    wins.sort((a, b) => a.left - b.left || b.frac - a.frac);
+    const out = [...wins];
     const avail = E.availableSlots(S);
     const afford = avail.filter(i => E.cardCost(S, o, S.slots[i].id).coins <= P.coins).length;
-    out.push(`${name} has ${P.coins} Coin${P.coins === 1 ? '' : 's'} and could play ${afford} of the ${avail.length} available cards.`);
-    const pt = parts(S, o);
-    const top = Object.entries(pt).sort((a, b) => b[1] - a[1])[0][0];
-    out.push(`Main threat: ${{quest: 'the Quest of the Ring', races: 'Support of the Races', regions: 'Conquest of Middle-earth'}[top]}.`);
-    if (S.opts.allies) out.push(`${name} has ${P.power} Power token${P.power === 1 ? '' : 's'} and ${P.allies.hand.length} hidden Ally card${P.allies.hand.length === 1 ? '' : 's'}.`);
+    out.push({text: `${name} has ${P.coins} Coin${P.coins === 1 ? '' : 's'} and could play ${afford} of the ${avail.length} available cards.`});
+    if (S.opts.allies) out.push({text: `${name} has ${P.power} Power token${P.power === 1 ? '' : 's'} and ${P.allies.hand.length} hidden Ally card${P.allies.hand.length === 1 ? '' : 's'}.`});
     return out;
   }
 
@@ -2380,9 +2401,10 @@ function tilesHTML() {
   const targ = new Set(pend ? pend.opts.filter(o => o.tile).map(o => o.tile) : []);
   let h = S.tilesFace.map(t => {
     const T = TILES[t], ok = legal.some(a => a.t === 'tile' && a.tile === t) || targ.has(t);
-    const c = Engine.tileCost(S, S.active, t), locked = S.tileLocks.includes(t);
+    const who = myTurn() ? S.active : viewer(), c = Engine.tileCost(S, who, t), locked = S.tileLocks.includes(t);
+    const cant = !S.winner && !ok && c.coins > S.players[who].coins;
     const img = art('T:' + t);
-    return `<button class="tile ${ok ? 'legal' : ''} ${T.fan ? 'fan' : ''} ${locked ? 'locked' : ''} ${img ? 'art' : ''} ${UI.aiPick && UI.aiPick.tile === t ? 'aipick' : ''}" data-a="tile" data-t="${t}"${img ? ` style="background-image:linear-gradient(rgba(20,14,8,.15),rgba(20,14,8,.78)),url(${img})"` : ''}>
+    return `<button class="tile ${ok ? 'legal' : ''} ${cant ? 'cant' : ''} ${T.fan ? 'fan' : ''} ${locked ? 'locked' : ''} ${img ? 'art' : ''} ${UI.aiPick && UI.aiPick.tile === t ? 'aipick' : ''}" data-a="tile" data-t="${t}"${img ? ` style="background-image:linear-gradient(rgba(20,14,8,.15),rgba(20,14,8,.78)),url(${img})"` : ''}>
       <span class="tc">${main ? `<svg width="22" height="22" viewBox="-11 -11 22 22">${coinSVG(0, 0, c.coins, 10)}</svg>` : ''}</span>
       <div class="tn">${esc(T.name)}</div>
       <div class="ts">${skillStr(T.skills.split(' '))}</div>
@@ -2408,7 +2430,7 @@ function playerHTML(p) {
   let h = `<div class="player p${p} ${S.active === p && !S.winner ? 'active' : ''}"><h3><span>${esc(pname(S, p))} <small class="muted">${SIDE_NAMES[SIDES[p]]}${seat(p).type === 'ai' ? ` \u00B7 AI ${seat(p).level}` : ''}</small></span><span>${S.active === p && !S.winner ? '\u25B6' : ''}</span></h3>
     <div class="stats"><div class="coinstat"><b><svg width="20" height="20" viewBox="-10 -10 20 20">${coinSVG(0, 0, '', 9)}</svg>${P.coins}</b>Coins</div><div><b>${P.quest}/14</b>Quest</div><div><b>${Engine.regionCount(S, p)}/7</b>Regions</div><div><b>${Engine.distinctRaces(P)}/6</b>Races</div></div>
     <div class="sub2"><span class="muted">Supply:</span> ${P.units} Units \u00B7 ${P.forts} <button class="linkbtn" data-a="explain" data-k="forts">Fortresses \u24D8</button>${S.opts.allies ? ` \u00B7 \u26A1 ${P.power} Power` : ''}</div>
-    <div class="sub2"><span class="muted">Races:</span><div class="chips">${RACES.map(r => `<span class="chip ${races.has(r) ? '' : 'miss'}" title="${RACE_NAMES[r]}">${RACE_ICON[r]} ${greens(P).filter(x => x === r).length || ''}</span>`).join('')}${hasHook(P, 'eagle') ? `<span class="chip">${RACE_ICON.eagle}</span>` : ''}</div></div>
+    <div class="sub2"><span class="muted">Races:</span><div class="chips">${RACES.map(r => `<button class="chip ${races.has(r) ? '' : 'miss'}" data-a="race" data-r="${r}" data-p="${p}" title="${RACE_NAMES[r]}">${RACE_ICON[r]} ${greens(P).filter(x => x === r).length || ''}</button>`).join('')}${hasHook(P, 'eagle') ? `<button class="chip" data-a="race" data-r="eagle" data-p="${p}" title="Eagle">${RACE_ICON.eagle}</button>` : ''}</div></div>
     <div class="sub2"><span class="muted">Skills:</span> ${SKILLS.map(k => t[k] ? `${SKILL_ICON[k]}\u00D7${t[k]}` : '').filter(Boolean).join(' ') || '\u2014'}${ch.map(g => ` [${g.map(k => SKILL_ICON[k]).join('/')}]`).join('')}${hasHook(P, 'wildSkill') ? ' +1 any' : ''}</div>
     <div class="sub2"><span class="muted">Cards:</span> ${COLORS.map(c => colors[c] ? `<span class="cc" style="background:${CFILL[c]}"></span>${colors[c]}` : '').filter(Boolean).join(' ') || '\u2014'}
       ${P.cards.some(id => CARDS[id].chainOut) ? `<div class="chips">${P.cards.filter(id => CARDS[id].chainOut).map(id => `<span class="chip" title="Chain symbol">\u2192${CHAIN_ICON[CARDS[id].chainOut]}</span>`).join('')}</div>` : ''}</div>`;
@@ -2417,13 +2439,14 @@ function playerHTML(p) {
   if (S.opts.allies) {
     const A = P.allies, acts = myTurn() && actor(S) === p && !S.pending ? Engine.allyActions(S, p) : [];
     h += `<div class="sub2"><button class="linkbtn" data-a="explain" data-k="allies">Allies \u24D8</button> <span class="muted">${P.power ? `${P.power}\u26A1: call one for 1, send one away for 2` : 'Gain \u26A1 by revealing cards with a Power token'}</span>`;
+    const pic = a => art('A:' + a) ? `<button class="allypic" data-a="allyinfo" data-ally="${a}" data-p="${p}" title="Show ${esc(ALLIES[a].name)}">${allyImg(a)}</button>` : '';
     for (const a of A.front) {
       const can = acts.some(x => x.a === a && x.mode === 'exit');
-      h += `<div class="ally">${allyImg(a)}<b>${esc(ALLIES[a].name)}</b> <span class="muted">(in play)</span><div>Exit: ${esc(ALLIES[a].xt)}</div>${can ? `<button data-a="ally" data-ally="${a}" data-mode="exit" class="lock">Send away (2\u26A1)</button>` : ''}</div>`;
+      h += `<div class="ally">${pic(a)}<button class="linkbtn" data-a="allyinfo" data-ally="${a}" data-p="${p}"><b>${esc(ALLIES[a].name)}</b></button> <span class="muted">(in play)</span><div>Exit: ${esc(ALLIES[a].xt)}</div>${can ? `<button data-a="ally" data-ally="${a}" data-mode="exit">Send away (2\u26A1)</button>` : ''}</div>`;
     }
     if (mine) for (const a of A.hand) {
       const can = acts.some(x => x.a === a && x.mode === 'enter');
-      h += `<div class="ally">${allyImg(a)}<b>${esc(ALLIES[a].name)}</b> <span class="muted">(hidden)</span><div>Enter: ${esc(ALLIES[a].et)}</div><div class="muted">Exit: ${esc(ALLIES[a].xt)}</div>${can ? `<button data-a="ally" data-ally="${a}" data-mode="enter" class="lock">Call (1\u26A1)</button>` : ''}</div>`;
+      h += `<div class="ally">${pic(a)}<button class="linkbtn" data-a="allyinfo" data-ally="${a}" data-p="${p}"><b>${esc(ALLIES[a].name)}</b></button> <span class="muted">(hidden)</span><div>Enter: ${esc(ALLIES[a].et)}</div><div class="muted">Exit, once in play: ${esc(ALLIES[a].xt)}</div>${can ? `<button data-a="ally" data-ally="${a}" data-mode="enter">Call (1\u26A1)</button>` : ''}</div>`;
     }
     else if (A.hand.length) h += `<div class="ally muted">${A.hand.length} hidden Ally card${A.hand.length > 1 ? 's' : ''}</div>`;
     if (A.gone.length) h += `<div class="muted" style="font-size:12px">Gone: ${A.gone.map(a => esc(ALLIES[a].name)).join(', ')}</div>`;
@@ -2436,7 +2459,7 @@ function stacksHTML() {
   const S = UI.S;
   return `<div class="player stacks"><h3><span>Race alliances <button class="linkbtn" data-a="explain" data-k="alliances">\u24D8</button></span></h3>
     <div class="stackrow">${RACES.map(r => `<button class="stack ${S.stacks[r].length ? '' : 'empty'}" data-a="stack" data-r="${r}" title="${RACE_NAMES[r]}: tap to preview">
-      <span class="si">${RACE_ICON[r]}</span><span class="sn">${RACE_NAMES[r]}</span><span class="sc">${S.stacks[r].length} left${S.stackLocks.includes(r) ? ' \u{1F512}' : ''}</span></button>`).join('')}</div>
+      <span class="si">${RACE_ICON[r]}</span><span class="sn">${RACE_NAMES[r]}</span><span class="sc">${S.stacks[r].length} left${S.stackLocks.includes(r) ? ' \u00B7 locked' : ''}</span></button>`).join('')}</div>
     <div class="muted" style="font-size:12px">Tap a stack to see which powers you might draw.</div></div>`;
 }
 function showStack(r) {
@@ -2445,7 +2468,7 @@ function showStack(r) {
   const holder = t => [0, 1].find(p => S.players[p].tokens.includes(t));
   const li = (t, note) => `<li>${esc(TOKENS[t].text)}${note ? ` <span class="muted">${note}</span>` : ''}</li>`;
   modal({title: `${RACE_ICON[r]} ${RACE_NAMES[r]} Alliance tokens`, body: `
-    <p>${st.length} of ${all.length} left${S.stackLocks.includes(r) ? ' \u00B7 \u{1F512} locked by Shelob for the Fellowship' : ''}.</p>
+    <p>${st.length} of ${all.length} left${S.stackLocks.includes(r) ? ' \u00B7 locked by Shelob for the Fellowship' : ''}.</p>
     ${known.length ? `<p><b>Known, on top:</b></p><ul>${known.map(t => li(t.id)).join('')}</ul>` : ''}
     ${hidden.length ? `<p><b>You might draw</b> (order hidden):</p><ul>${hidden.map(t => li(t.id)).join('')}</ul>` : ''}
     ${all.filter(t => !st.some(x => x.id === t)).length ? `<p><b>Already taken:</b></p><ul>${all.filter(t => !st.some(x => x.id === t)).map(t => li(t, holder(t) === undefined ? '(discarded)' : `(${esc(pname(S, holder(t)))})`)).join('')}</ul>` : ''}
@@ -2508,9 +2531,8 @@ function promptHTML() {
     }
     if (pd.type === 'move' && UI.sel) opts = opts.filter(({o}) => o.skip || o.from === UI.sel);
     for (const {o, i} of opts) {
-      const irr = Engine.apply(S, {t: 'choose', i}).irrev;
-      if (o.card && pd.type !== 'grey') h += `<button class="mini ${irr ? 'lock' : ''}" data-a="opt" data-i="${i}" title="${esc(o.label)}">${cardSVGfull(o.card, 62)}</button>`;
-      else h += `<button class="${irr ? 'lock' : ''}" data-a="opt" data-i="${i}">${esc(o.label)}</button>`;
+      if (o.card && pd.type !== 'grey') h += `<button class="mini" data-a="opt" data-i="${i}" title="${esc(o.label)}">${cardSVGfull(o.card, 62)}</button>`;
+      else h += `<button data-a="opt" data-i="${i}">${esc(o.label)}</button>`;
     }
     h += `</div>`;
   } else if (!S.mainDone) {
@@ -2534,7 +2556,12 @@ function journalHTML() {
 }
 function intelHTML() {
   const v = viewer();
-  return `<div class="muted" style="font-size:13px">Hints about ${esc(pname(UI.S, opp(v)))} from what is visible on the table.</div><ul class="intel">${AI.intel(UI.S, v).map(x => `<li>${esc(x)}</li>`).join('')}</ul>`;
+  return `<div class="muted" style="font-size:13px">Hints about ${esc(pname(UI.S, opp(v)))} from what is visible on the table.</div><ul class="intel">${AI.intel(UI.S, v).map((x, i) => {
+    if (!x.k) return `<li>${esc(x.text)}</li>`;
+    const T = TRACKS.find(t => t[0] === x.k);
+    return `<li class="iwin ${i === 0 ? 'closest' : ''}"><div class="ih">${T[1]} <b>${T[2]}</b><span>${x.left ? `${x.left} to go` : 'complete'}${i === 0 ? ' \u00B7 closest' : ''}</span></div>
+      <span class="rvb"><i style="width:${Math.round(x.frac * 100)}%;background:${SIDE_COL[opp(v)]}"></i></span><div>${esc(x.text)}</div></li>`;
+  }).join('')}</ul>`;
 }
 function sideBody() {
   if (UI.tab === 'journal') return journalHTML();
@@ -2797,7 +2824,9 @@ document.addEventListener('click', e => {
     case 'tile': return onTile(el.dataset.t);
     case 'region': return onRegion(el.dataset.r);
     case 'opt': if (myTurn() && S.pending) commit({t: 'choose', i: +el.dataset.i}, true); return;
-    case 'ally': return onAlly(el.dataset.ally, el.dataset.mode);
+    case 'ally': return onAlly(el.dataset.ally);
+    case 'allyinfo': return showAlly(el.dataset.ally, +el.dataset.p);
+    case 'race': return showRace(el.dataset.r, +el.dataset.p);
     case 'end': if (myTurn()) commit({t: 'end'}, true); return;
     case 'undo': if (UI.undo.length) { UI.S = UI.undo.pop(); UI.sel = null; save(); renderGame(); } return;
     case 'view': UI.view = el.dataset.v; return renderGame();
@@ -2839,9 +2868,8 @@ function onSlot(i) {
   info += `<p class="muted">${cost.chain ? 'You can chain it for free.' : `To play it: ${cost.coins} Coin${cost.coins === 1 ? '' : 's'} (${cost.missing} missing Skill${cost.missing === 1 ? '' : 's'}${c.cost.coins ? ` + ${c.cost.coins} printed` : ''}). You have ${S.players[p].coins}.`}</p>`;
   if (!avail) info += `<p class="muted">Covered: not available yet.</p>`;
   const buttons = legal.map(a => {
-    const irr = Engine.apply(S, a).irrev;
     const lab = a.mode === 'play' ? `Play${cost.coins ? ` (${cost.coins}\u25CF)` : ''}` : `Discard (+${S.chapter * (hasHook(S.players[S.active], 'discardDouble') ? 2 : 1)}\u25CF)`;
-    return {label: lab + (irr ? ' \u{1F512}' : ''), cls: a.mode === 'play' ? 'primary' : '', fn: () => commit(a, true)};
+    return {label: lab, cls: a.mode === 'play' ? 'primary' : '', fn: () => commit(a, true)};
   });
   if (main && avail && !legal.some(a => a.mode === 'play') && !(S.forced && S.forced.mode === 'discard')) info += `<p class="muted">You cannot afford to play it.</p>`;
   modal({title: `${c.color[0].toUpperCase() + c.color.slice(1)} card`, body: `<div class="cardbig">${cardSVGfull(sl.id, 130)}<div>${info}</div></div>`, buttons});
@@ -2855,11 +2883,10 @@ function onTile(t) {
   }
   const T = TILES[t], main = myTurn() && !S.mainDone, p = main ? S.active : viewer(), c = Engine.tileCost(S, p, t);
   const a = main && Engine.legalActions(S).find(x => x.t === 'tile' && x.tile === t);
-  const irr = a && Engine.apply(S, a).irrev;
   modal({title: T.name, body: `${art('T:' + t) ? `<img class="tilebig" src="${ART['T:' + t]}" alt="">` : ''}<p>${esc(TILE_TEXT[t])}</p><p>Skills: ${skillStr(T.skills.split(' '))}</p>
     <p class="muted">Cost for you: ${c.coins} Coin${c.coins === 1 ? '' : 's'} (${c.missing} missing Skills + ${c.fee} for your Fortresses on the board). You have ${S.players[p].coins}.</p>
     ${t === 'grond' && !REGION_IDS.some(r => S.board[r].f[opp(p)]) ? '<p class="muted">Needs an enemy Fortress on the board.</p>' : ''}${S.tileLocks.includes(t) ? '<p class="muted">Locked by the Uruk-Hai Chief for the Fellowship.</p>' : ''}`,
-    buttons: a ? [{label: `Build (${c.coins}\u25CF)${irr ? ' \u{1F512}' : ''}`, cls: 'primary', fn: () => commit(a, true)}] : []});
+    buttons: a ? [{label: `Build (${c.coins}\u25CF)`, cls: 'primary', fn: () => commit(a, true)}] : []});
 }
 function onRegion(r) {
   const S = UI.S;
@@ -2881,13 +2908,29 @@ function onRegion(r) {
   const k = pd.opts.findIndex(o => o.region === r);
   if (k >= 0) commit({t: 'choose', i: k}, true);
 }
-function onAlly(a, mode) {
-  const S = UI.S;
-  const act = Engine.legalActions(S).find(x => x.t === 'ally' && x.a === a && x.mode === mode);
-  if (!act || !myTurn()) return;
-  const al = ALLIES[a];
-  modal({title: al.name, body: `${art('A:' + a) ? `<img class="allybig" src="${ART['A:' + a]}" alt="">` : ''}<p>${mode === 'enter' ? 'Enter' : 'Exit'}: ${esc(mode === 'enter' ? al.et : al.xt)}</p><p class="muted">Costs ${mode === 'enter' ? 1 : 2} Power. Allies cannot be undone.</p>`,
-    buttons: [{label: mode === 'enter' ? 'Call (1\u26A1) \u{1F512}' : 'Send away (2\u26A1) \u{1F512}', cls: 'primary', fn: () => commit(act, true)}]});
+function onAlly(a) { showAlly(a, UI.S.players.findIndex(P => P.allies.hand.includes(a) || P.allies.front.includes(a) || P.allies.gone.includes(a))); }
+function showAlly(a, p) {
+  const S = UI.S, al = ALLIES[a], A = S.players[p].allies;
+  const where = A.front.includes(a) ? 'front' : A.hand.includes(a) ? 'hand' : 'gone';
+  const acts = myTurn() && actor(S) === p && !S.pending ? Engine.allyActions(S, p).filter(x => x.a === a) : [];
+  const status = {hand: 'Hidden in your hand. Call it for 1\u26A1 to apply its Enter effect and put it in play.',
+    front: 'In play. Send it away for 2\u26A1 to apply its Exit effect.', gone: 'Sent away: both effects are used.'}[where];
+  const why = where === 'hand' && !acts.length && myTurn() && actor(S) === p ? (S.allyUsed ? 'You have already used an Ally this turn.' : S.players[p].power < 1 ? 'You need 1\u26A1 Power to call it.' : '')
+    : where === 'front' && !acts.length && myTurn() && actor(S) === p ? (S.allyUsed ? 'You have already used an Ally this turn.' : S.players[p].power < 2 ? 'You need 2\u26A1 Power to send it away.' : '') : '';
+  modal({title: al.name, body: `${art('A:' + a) ? `<img class="allybig" src="${ART['A:' + a]}" alt="">` : ''}
+    <p class="${where === 'hand' ? '' : 'muted'}"><b>Enter:</b> ${esc(al.et)}</p>
+    <p class="${where === 'front' ? '' : 'muted'}"><b>Exit:</b> ${esc(al.xt)}${where === 'hand' ? ' <i>(only once it is in play)</i>' : ''}</p>
+    <p class="muted">${status}${why ? ' ' + why : ''} One Ally action per turn; Ally actions cannot be undone.</p>`,
+    buttons: acts.map(act => ({label: act.mode === 'enter' ? 'Call (1\u26A1)' : 'Send away (2\u26A1)', cls: 'primary', fn: () => commit(act, true)}))});
+}
+function showRace(r, p) {
+  const S = UI.S, P = S.players[p], n = r === 'eagle' ? 1 : greens(P).filter(x => x === r).length;
+  const who = p === viewer() && humans().length ? 'You have' : `${esc(pname(S, p))} has`;
+  const body = r === 'eagle'
+    ? `<p>${RACE_ICON.eagle} <b>Eagle</b>: an extra Race symbol from a Hobbits alliance token. It counts toward the 6 different Race symbols for Support of the Races.</p>`
+    : `<p style="font-size:18px">${RACE_ICON[r]} <b>${RACE_NAMES[r]}</b></p><p>${who} ${n} ${RACE_NAMES[r]} symbol${n === 1 ? '' : 's'} (from Green cards).</p>
+       <p class="muted">Each different Race counts toward Support of the Races (6 wins). 2 matching or 3 different Race symbols earn an Alliance token from a Race stack. ${S.stacks[r] ? `${S.stacks[r].length} ${RACE_NAMES[r]} token${S.stacks[r].length === 1 ? '' : 's'} left.` : ''}</p>`;
+  modal({title: r === 'eagle' ? 'Eagle' : RACE_NAMES[r], dock: false, body, buttons: r !== 'eagle' && S.stacks[r] ? [{label: `See ${RACE_NAMES[r]} tokens`, fn: () => showStack(r)}] : []});
 }
 
 // ---------- popups ----------
@@ -2970,7 +3013,7 @@ function showHelp() {
     <p>In the card layout, a <b style="color:#1f9a45">green glow</b> marks cards you can chain for free and a <b style="color:#c0302a">red glow</b> cards you cannot afford. The top bar tracks the three ways to win: tap it for details.</p>
     <p><b>Win at once</b> by reaching the end of the Quest (14 spaces), by gathering 6 different Race symbols, or by being present in all 7 regions. Otherwise, after chapter 3 the side present in more regions wins.</p>
     <p>Skills: ${SKILLS.map(k => `${SKILL_ICON[k]} ${SKILL_NAMES[k]}`).join(' \u00B7 ')}. Races: ${RACES.map(r => `${RACE_ICON[r]} ${RACE_NAMES[r]}`).join(' \u00B7 ')}.</p>
-    <p class="muted">\u{1F512} on a button: that action reveals hidden information and cannot be undone.</p>
+    <p class="muted">Actions that reveal hidden cards, and Ally actions, cannot be undone.</p>
     <p><a href="${RULES_URL}" target="_blank" rel="noopener">Official game page and rules</a></p>`});
 }
 
@@ -3073,7 +3116,7 @@ function outcome(S, a, p) {
   if (N.extra > S.extra) out.push('another turn');
   if (N.pending && N.pending.p === p) out.push(`then: ${N.pending.prompt}`);
   if (N.winner) out.push(N.winner.p === p ? '\u{1F3C6} wins the game' : N.winner.p === 'tie' ? 'ends in a tie' : 'loses the game');
-  if (N.irrev) out.push('\u{1F512} cannot be undone');
+  if (N.irrev) out.push('cannot be undone');
   return out.join(' \u00B7 ') || 'no immediate change';
 }
 function previewHTML(el) {
@@ -3390,6 +3433,8 @@ function runFreeze() {
   if (pop === 'card') { const i = Engine.availableSlots(UI.S).find(k => UI.S.slots[k].face); if (i !== undefined) onSlot(i); }
   if (pop === 'menu') showMenu();
   if (pop === 'keys') showKeys();
+  if (pop === 'ally') { const me = viewer(), A = UI.S.players[me].allies, a = A.hand[0] || A.front[0]; if (a) showAlly(a, me); }
+  if (pop === 'race') showRace(Q.get('r') || 'elves', viewer());
   if (pop === 'stats') { if (UI.S.winner) recordStats(UI.S); showStats(); }
   if (pop === 'result' && UI.S.winner) showResult();
   if (pop === 'share' && UI.S.winner) showShare();
