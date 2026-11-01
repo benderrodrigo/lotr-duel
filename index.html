@@ -2009,7 +2009,7 @@ const Tests = (() => {
   // ---- meta ----
   test('changelog newest first and matches APP_VERSION', () => {
     eq(CHANGELOG[0].v, APP_VERSION);
-    const cmp = (a, b) => { const [x, y] = [a, b].map(v => v.split('.').map(Number)); return x[0] - y[0] || (x[1] || 0) - (y[1] || 0); };
+    const cmp = (a, b) => { const [x, y] = [a, b].map(v => v.split('.').map(Number)); return x[0] - y[0] || (x[1] || 0) - (y[1] || 0) || (x[2] || 0) - (y[2] || 0); };
     ok(cmp('0.10', '0.9') > 0, 'numeric compare');
     for (let i = 1; i < CHANGELOG.length; i++) ok(cmp(CHANGELOG[i - 1].v, CHANGELOG[i].v) > 0, `changelog order at ${CHANGELOG[i].v}`);
   });
